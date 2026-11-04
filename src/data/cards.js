@@ -23,23 +23,45 @@ export const RELICS = [
   { id: 'amber-a1', class: 'amber', rarity: 'common', base: 12, name: 'Слеза софоры' },
   { id: 'amber-a2', class: 'amber', rarity: 'common', base: 14, name: 'Пчелиный гребень' },
   { id: 'amber-a3', class: 'amber', rarity: 'fine', base: 18, name: 'Янтарь-пузырь' },
-  { id: 'amber-a4', class: 'amber', rarity: 'rare', base: 26, name: 'Сердце капли' },
+  { id: 'amber-a4', class: 'amber', rarity: 'rare', base: 26, name: 'Сердце капли', trait: 'fragile' },
   { id: 'bone-b1', class: 'bone', rarity: 'common', base: 11, name: 'Костяной гребень' },
   { id: 'bone-b2', class: 'bone', rarity: 'fine', base: 17, name: 'Позвонок старца' },
-  { id: 'bone-b3', class: 'bone', rarity: 'rare', base: 27, name: 'Челюсть певца' },
+  { id: 'bone-b3', class: 'bone', rarity: 'rare', base: 27, name: 'Челюсть певца', trait: 'unnamed' },
   { id: 'porcel-c1', class: 'porcel', rarity: 'common', base: 13, name: 'Чашка с трещиной' },
   { id: 'porcel-c2', class: 'porcel', rarity: 'fine', base: 19, name: 'Блюдце русалки' },
-  { id: 'porcel-c3', class: 'porcel', rarity: 'rare', base: 28, name: 'Ваза без дна' },
+  { id: 'porcel-c3', class: 'porcel', rarity: 'rare', base: 28, name: 'Ваза без дна', trait: 'fragile' },
   { id: 'glass-d1', class: 'glass', rarity: 'common', base: 12, name: 'Слепок окна' },
   { id: 'glass-d2', class: 'glass', rarity: 'fine', base: 18, name: 'Мениск' },
-  { id: 'glass-d3', class: 'glass', rarity: 'rare', base: 29, name: 'Линза часовщика' },
+  { id: 'glass-d3', class: 'glass', rarity: 'rare', base: 29, name: 'Линза часовщика', trait: 'lens' },
   { id: 'brass-e1', class: 'brass', rarity: 'common', base: 15, name: 'Шестерня без зуба' },
   { id: 'brass-e2', class: 'brass', rarity: 'fine', base: 21, name: 'Ключ от ниоткуда' },
-  { id: 'brass-e3', class: 'brass', rarity: 'rare', base: 31, name: 'Верньер' },
+  { id: 'brass-e3', class: 'brass', rarity: 'rare', base: 31, name: 'Верньер', trait: 'verner' },
   { id: 'ink-f1', class: 'ink', rarity: 'common', base: 10, name: 'Пятно чернил' },
   { id: 'ink-f2', class: 'ink', rarity: 'fine', base: 16, name: 'Обрывок письма' },
-  { id: 'ink-f3', class: 'ink', rarity: 'rare', base: 25, name: 'Подпись без имени' },
+  { id: 'ink-f3', class: 'ink', rarity: 'rare', base: 25, name: 'Подпись без имени', trait: 'unnamed' },
+  { id: 'ink-f4', class: 'ink', rarity: 'fabled', base: 44, name: 'Клякса в форме сердца' },
+
+  // Сказáнные вещи — дорогие, редкие и с характером. Их ищут дома и помнят соперники.
+  { id: 'amber-a5', class: 'amber', rarity: 'fabled', base: 46, name: 'Смола с пальцем' },
+  { id: 'bone-b4', class: 'bone', rarity: 'common', base: 12, name: 'Трубка из бедра' },
+  { id: 'bone-b5', class: 'bone', rarity: 'fabled', base: 42, name: 'Палец аббата' },
+  { id: 'porcel-c4', class: 'porcel', rarity: 'common', base: 14, name: 'Голова куклы' },
+  { id: 'porcel-c5', class: 'porcel', rarity: 'fabled', base: 45, name: 'Суповой сервиз' },
+  { id: 'glass-d4', class: 'glass', rarity: 'common', base: 13, name: 'Капля собора' },
+  { id: 'glass-d5', class: 'glass', rarity: 'fabled', base: 43, name: 'Осколок витража' },
+  { id: 'brass-e4', class: 'brass', rarity: 'common', base: 16, name: 'Гиря в оправе' },
+  { id: 'brass-e5', class: 'brass', rarity: 'fabled', base: 47, name: 'Метроном' },
+  { id: 'ink-f5', class: 'ink', rarity: 'common', base: 11, name: 'Печать нотариуса' },
+  { id: 'ink-f6', class: 'ink', rarity: 'fabled', base: 41, name: 'Письмо без адреса' },
 ];
+
+// Характер вещи: одно свойство, которое видно в её карточке и работает в дуэли.
+export const TRAITS = {
+  fragile:  { name: 'Хрупкая', desc: 'в дуэли даёт +2 силы за каждую другую вещь своего класса' },
+  lens:     { name: 'Линза', desc: 'раскрывает скрытый приём соперника до боя' },
+  verner:   { name: 'Точность', desc: '+6 силы, если на столе есть тройка' },
+  unnamed:  { name: 'Без имени', desc: '+3 репутации при победе в дуэли' },
+};
 
 export const BOT_ARCHETYPES = {
   shark: { name: 'Акула', desc: 'жадная, берёт всё яркое', aggression: 1.25, budget: 1.15 },

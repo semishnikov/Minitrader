@@ -3,7 +3,7 @@
 // ============================================================================
 import * as E from '../core/engine.js';
 import { Rng } from '../core/rng.js';
-import { CLASSES } from '../data/cards.js';
+import { CLASSES, TRAITS } from '../data/cards.js';
 import { relicArt, crest, ICONS } from './art.js';
 import { h, esc, $, clear, onAction, money } from './dom.js';
 
@@ -697,6 +697,7 @@ function relicCard(r, size = '', idx = null, hidden = false) {
   return `<div class="relic${sfx}${rarCls}" style="--cls:${col}" ${idx !== null ? `data-idx="${idx}"` : ''}>
     ${showVal ? `<div class="relic__val">${r.base}</div>` : ''}
     <div class="relic__art">${relicArt(r)}</div>
+    ${r.trait && TRAITS[r.trait] && size !== 'xs' ? `<div class="relic__trait" title="${esc(TRAITS[r.trait].desc)}">${esc(TRAITS[r.trait].name)}</div>` : ''}
     <div class="relic__meta">
       <div class="relic__name">${esc(r.name)}</div>
       <div class="relic__foot">
@@ -1073,8 +1074,7 @@ function openNightSheet() {
       <div class="kv"><span class="dim">инфляция</span><b>${S.inflation.toFixed(1)}</b></div>
     </div>
     <div class="row" style="margin-top:14px">
-      <button class="btn btn--ghost grow" data-act="skipNight">пропустить</button>
-      <button class="btn grow" data-act="endNight">спать</button>
+      <button class="btn ${ev ? 'btn--ghost' : ''} grow" data-act="endNight">${ev ? 'ничего не делать · спать' : 'спать'}</button>
     </div>
   `);
   MODAL.querySelectorAll('[data-night]').forEach((b) => {
@@ -1087,7 +1087,6 @@ function openNightSheet() {
       finishDay();
     });
   });
-  MODAL.querySelector('[data-act=skipNight]').onclick = () => { closeModal(); finishDay(); };
   MODAL.querySelector('[data-act=endNight]').onclick = () => { closeModal(); finishDay(); };
 }
 

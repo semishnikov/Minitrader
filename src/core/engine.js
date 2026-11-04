@@ -3,7 +3,7 @@
 // Валюта одна: монеты (М). Все числа — здесь, чтобы UI ничего не выдумывал.
 // ============================================================================
 import { Rng, clamp } from './rng.js';
-import { CLASSES } from '../data/cards.js';
+import { CLASSES, TRAITS, RELICS as RELIC_CARDS } from '../data/cards.js';
 
 export const DAYS = 6;
 let UID = 0;
@@ -35,6 +35,9 @@ export function makeRelic(rng, opts = {}) {
   const rarity = opts.rarity || rng.weighted([['common', 58], ['fine', 28], ['rare', 11], ['fabled', 3]]);
   const name = opts.name || rng.pick(NAMES[cls]);
   const relic = { uid: `u${++UID}`, class: cls, rarity, name };
+  // Характер берём из каталога по имени — он должен пережить все копии/сплавы.
+  const card = RELIC_CARDS.find((c) => c.name === name);
+  if (card && card.trait) relic.trait = card.trait;
   relic.base = baseValue(relic);
   if (opts.price) relic.base = opts.price;
   return relic;
@@ -816,6 +819,27 @@ export function duelPreview(s) {
   let mine = Math.round(myTable.power * myRep);
   let them = rival.basePower;
   const notes = [];
+
+  // Характер вещей: узкие, но читаемые бонусы — за ними охотятся на торге.
+  const traitNotes = [];
+  for (const r of s.stash) {
+    const t = r.trait && TRAITS[r.trait];
+    if (!t) continue;
+    if (r.trait === 'fragile') {
+      const same = s.stash.filter((x) => x.class === r.class).length - 1;
+      if (same > 0) { mine += 2 * same; traitNotes.push(`${r.name}: хрупкая → +${2 * same}`); }
+    } else if (r.trait === 'verner' && myTable.triples.length) {
+      mine += 6; traitNotes.push(`${r.name}: точность → +6`);
+    }
+  }
+  for (const n of traitNotes) notePush(notes, n);
+  d.traitNotes = traitNotes;
+
+  // «Линза» на столе: видно скрытый козырь ещё до выбора приёма.
+  const hasLens = s.stash.some((r) => r.trait === 'lens');
+  if (hasLens && rival.mod.id !== 'none' && !rival.hiddenGone) {
+    notePush(notes, `Линза: козырь соперника — «${rival.mod.name}»`);
+  }
   const known = rival.revealed;
 
   const metaCount = rival.cards.filter((c) => c.class === rival.meta).length;

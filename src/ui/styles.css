@@ -691,7 +691,9 @@ input[type='range']::-moz-range-thumb {
   padding: 0 4px;
   left: 50%;
   transform: translateX(-50%);
-  width: min(480px, calc(100% - 24px));
+  width: fit-content;
+  max-width: min(340px, calc(100% - 28px));
+  justify-items: center;
   display: grid;
   gap: 6px;
   pointer-events: none;
@@ -1058,7 +1060,13 @@ input[type='range']:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px 
 /* Слой тостов: аккуратнее, без наложения на заголовок */
 .toast-layer { gap: 5px; }
 .toast-layer .toast { animation: toastIn .26s var(--snap) both; }
-.toast { padding: 8px 11px; font-size: 12px; backdrop-filter: blur(8px); }
+.toast {
+  padding: 6px 12px; font-size: 11.5px; backdrop-filter: blur(8px);
+  border-radius: 999px; gap: 6px;
+  box-shadow: 0 6px 20px rgba(0,0,0,.55);
+  max-width: 100%;
+}
+.toast > * { min-width: 0; }
 
 /* ---------- Сделка дня ---------- */
 .deal {
@@ -1093,3 +1101,20 @@ input[type='range']:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px 
   font-variant-numeric: tabular-nums; color: var(--brass-hi);
 }
 .deal__price span { font-size: 11px; color: var(--ink-faint); margin-left: 3px; font-family: var(--f-body); font-weight: 400; }
+
+/* Характер вещи: латунная метка в углу гравюры */
+.relic__trait {
+  position: absolute;
+  left: 5px; top: 22px;
+  font-family: var(--f-display);
+  font-size: 7.5px; letter-spacing: .08em; text-transform: uppercase;
+  color: #2a1f10;
+  background: linear-gradient(180deg, var(--brass-hi), var(--brass));
+  padding: 1.5px 4px; border-radius: 3px;
+  line-height: 1.25; max-width: calc(100% - 10px);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  box-shadow: 0 1px 4px rgba(0,0,0,.5);
+  z-index: 2;
+}
+.relic--thumb .relic__trait { font-size: 6.5px; left: 4px; top: 18px; padding: 1px 3px; }
+.relic--sm .relic__trait { font-size: 7px; top: 20px; }
