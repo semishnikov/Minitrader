@@ -1327,6 +1327,10 @@ function boot() {
     splash();
   }
   document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
+  // Офлайн: после первого захода игра работает без сети (нужен http/https, не file://).
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
 }
 
 /**
