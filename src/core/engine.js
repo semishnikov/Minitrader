@@ -43,6 +43,27 @@ export function makeRelic(rng, opts = {}) {
   return relic;
 }
 
+/**
+ * Спасательный круг: если касса пуста и стол пуст, ярмарка даёт «заклад» —
+ * 140 М под слово. Один раз за день, −6 репутации. Без этого партия
+ * превращается в просмотр пустых экранов до финала.
+ */
+export function isStuck(s) {
+  return s.coins < 12 && s.stash.length === 0 && !s.over;
+}
+
+export function takeAdvance(s) {
+  if (!isStuck(s)) return { ok: false, why: 'Залог положен только тем, у кого пусто.' };
+  if (s.flags.advanceDay === s.day) return { ok: false, why: 'Сегодня уже брал. Иди спать.' };
+  s.flags.advanceDay = s.day;
+  addCoins(s, 140, 'заклад у ярмарки');
+  changeRep(s, -6, 'слово под заклад');
+  // Денег без действия мало: заклад даёт один ход, чтобы ими воспользоваться.
+  const gaveAction = s.actions <= 0;
+  if (gaveAction) s.actions = 1;
+  return { ok: true, amount: 140, gaveAction };
+}
+
 // ---------------------------------------------------------------- утилиты
 
 export const fmt = (n) => {

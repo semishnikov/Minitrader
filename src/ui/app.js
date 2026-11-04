@@ -217,6 +217,18 @@ function renderMarket() {
       <span class="chip chip--brass">фокус зала · ${CLASSES[S.market.focus].name.toLowerCase()}</span>
       <span class="tiny faint">${S.market.focusCount} из ${S.market.lots.length} лотов</span>
     </div>` : ''}
+    ${E.isStuck(S) ? `<div class="deal" style="border-color:rgba(215,86,107,.4)">
+      <div class="deal__eyebrow" style="color:var(--red)">Пусто в кассе</div>
+      <div class="deal__title">Заклад под слово</div>
+      <div class="deal__desc">Зал не оставит тебя без дела: 140 М вперёд под честное слово. Один раз в день.</div>
+      <div class="deal__row">
+        <div class="deal__price">140<span>М вперёд</span></div>
+        <button class="btn btn--xs" data-act="advance" ${S.flags.advanceDay === S.day ? 'disabled' : ''}>
+          ${S.flags.advanceDay === S.day ? 'уже брал' : 'взять'}
+        </button>
+      </div>
+    </div>` : ''}
+
     ${dealCard()}
 
     ${S.dayEvent ? `<div class="panel pad" style="margin-top:10px;border-color:var(--line-soft)">
@@ -850,6 +862,13 @@ const actions = {
   },
 
   craft() { openCraftSheet(); },
+  advance() {
+    const r = E.takeAdvance(S);
+    if (!r.ok) return toast(esc(r.why), 'bad');
+    sound.coin(); buzz(14);
+    toast('Заклад под слово: +140 М, −6 репутации.', 'brass', 3000);
+    render();
+  },
   deal() {
     const d = S.deal;
     const r = E.takeDeal(S);
@@ -1340,6 +1359,8 @@ function boot() {
     splash();
   }
   document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
+  // Точка для e2e-тестов: подменить текущее состояние (используется только тестами).
+  window.__OTBLESKI_SET__ = (state) => { S = { ...state, rng: new RngShim(state.seed, state.day) }; lastCoins = S.coins; render(); save(); };
   // Офлайн: после первого захода игра работает без сети (нужен http/https, не file://).
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
     navigator.serviceWorker.register('./sw.js').catch(() => {});

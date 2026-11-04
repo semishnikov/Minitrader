@@ -120,6 +120,23 @@ T('ставка не превышает трети кассы', () => {
   return s.duel.bet <= Math.ceil(s.coins / 3) + 1 || 'ставка не ограничена: ' + s.duel.bet;
 });
 
+T('тупик: заклад спасает пустую кассу', () => {
+  const s = E.newGame('stuck-inv'); s.coins = 0; s.actions = 0; s.stash = [];
+  if (!E.isStuck(s)) return 'тупик не распознан';
+  const r = E.takeAdvance(s);
+  return (r.ok && s.coins >= 100 && s.actions >= 1) || 'заклад не сработал';
+});
+T('заклад нельзя взять дважды за день', () => {
+  const s = E.newGame('stuck-inv2'); s.coins = 0; s.actions = 0; s.stash = [];
+  E.takeAdvance(s); s.coins = 0; s.actions = 0; s.stash = [];
+  const again = E.takeAdvance(s);
+  return !again.ok || 'второй заклад прошёл';
+});
+T('заклад не положен тому, у кого есть деньги', () => {
+  const s = E.newGame('stuck-inv3'); s.coins = 500;
+  return !E.isStuck(s) || 'богатому тоже дали заклад';
+});
+
 const bad = tests.filter(t => !t[1].startsWith('OK'));
 tests.forEach(([n,r]) => console.log((r.startsWith('OK')?'  ✓ ':'  ✗ ') + n + (r.startsWith('OK')?'':' → '+r)));
 console.log('\nпровалов:', bad.length, '/', tests.length);
