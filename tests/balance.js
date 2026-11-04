@@ -126,7 +126,33 @@ function run(player, runs = 300) {
   };
 }
 
+function clever(){
+  const p = normalPlayer({overpay: 1.0, maneuver: 'probe'});
+  p.name='Умный';
+  p.duels = (s2) => {
+    while (s2.duelsToday < 3 && s2.stash.length >= 1) {
+      if (!E.startDuel(s2).ok) break;
+      E.chooseManeuver(s2, 'probe');
+      const opts=['feint','word','silence','tower','swap','nest'];
+      let best=null;
+      for (const k of opts){ E.chooseManeuver(s2,k); const q=E.duelPreview(s2); if(!best||q.diff>best.diff) best={k,diff:q.diff}; }
+      if (best.diff < -10) { E.closeDuel(s2); break; }
+      E.chooseManeuver(s2, best.k);
+      E.setBet(s2, Math.round(s2.coins*0.25));
+      E.resolveDuel(s2); E.closeDuel(s2);
+    }
+  };
+  p.table = (s2) => {
+    for (const o of s2.orders) if (!o.done && E.orderReady(s2,o)) E.fulfilOrder(s2,o.id);
+    const tri=E.tripleClasses(s2.stash);
+    const keep=new Set(s2.stash.filter(r=>tri.includes(r.class)||r.rarity!=='common').map(r=>r.uid));
+    for (const r of [...s2.stash]) if (!keep.has(r.uid) && s2.stash.length>3) E.sellRelic(s2,r.uid);
+    if (s2.maxSlots<7 && s2.coins>E.slotCost(s2)+140) E.buySlot(s2);
+  };
+  return p;
+}
 console.log(run(passive, 150));
+console.log(run(clever(), 200));
 console.log(run(normalPlayer({ overpay: 1.0 }), 200));
 console.log(run(normalPlayer({ overpay: 1.15 }), 200));
 console.log(run(expert(), 200));

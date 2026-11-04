@@ -1015,3 +1015,17 @@ input[type='range']:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px 
 .relic--xs .relic__dots { display: none; }
 .table-grid--xs .metatag { font-size: 5.5px; padding: 0 3px; left: 2px; top: 2px; }
 @media (max-width: 360px) { .table-grid--xs { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+/* Завершение дня */
+.dayend {
+  position: sticky;
+  bottom: calc(var(--safe-b) + 4px);
+  margin-top: 18px;
+  padding: 10px 0 6px;
+  background: linear-gradient(180deg, transparent, rgba(11,13,17,.94) 40%);
+  z-index: 4;
+}
+.dayend__hint {
+  text-align: center; font-size: 11px; color: var(--ink-faint);
+  letter-spacing: .05em; margin-bottom: 7px;
+}

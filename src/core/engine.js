@@ -171,7 +171,8 @@ export function makeMarket(s) {
     if (style !== 'ladder' && rng.chance(0.24)) relics.push(makeRelic(rng, { class: rng.pick(CLASS_KEYS), rarity: 'common' }));
     const value = relics.reduce((a, r) => a + r.base, 0);
     // Голландский стартует ВЫШЕ ценности (иначе нечего ждать), остальные — ниже.
-    const startMult = style === 'dutch' ? 1.5 + rng.float(0, 0.2) : 0.44 + rng.float(0, 0.12);
+    // Голландский начинается выше их оценки, но не выше «слепой» оценки зала.
+    const startMult = style === 'dutch' ? 1.28 + rng.float(0, 0.18) : 0.52 + rng.float(0, 0.12);
     const start = Math.max(8, Math.round(value * startMult * priceMod));
     lots.push({
       id: `L${i}`,
@@ -251,7 +252,8 @@ export function botValuation(s, bot, lot) {
   }, 0);
   if (lot.relics.length > 1) v *= 0.94; // связки берут неохотно
   v *= 1 + (s.dayEvent?.botMod || 0);
-  v *= rng.float(0.62, 0.95);      // личное «чутьё» — стабильно в пределах дня
+  // Туман зала: бот не видит «справедливую» цену, а угадывает её со своим сдвигом.
+  v *= rng.float(0.74, 1.02);      // личное «чутьё» — стабильно в пределах дня
   v *= bot.aggression;
   return Math.round(v);
 }
@@ -263,7 +265,7 @@ export function stableLimits(s, lot) {
     const val = botValuation(s, b, lot);
     if (val <= 0) continue;
     const rng = new Rng(`${s.seed}-lim-${s.day}-${lot.id}-${b.id}`);
-    const interest = clamp(val / Math.max(8, lot.start) - 0.25, 0, 1.4);
+    const interest = clamp(val / Math.max(8, lot.value) - 0.25, 0, 1.4);
     if (!rng.chance(0.3 + interest * 0.45)) continue;
     const max = Math.max(6, Math.min(b.budget, Math.round(val * rng.float(0.86, 1.0))));
     out.push({ bot: b, max });
@@ -303,7 +305,7 @@ export function placeBid(s, lotId, amount) {
   }
 
   // Второй лот за день стоит два действия — торг затягивает.
-  const extra = Math.min(2, s.dayStats.lotsWon);
+  const extra = s.dayStats.lotsWon >= 2 ? 2 : s.dayStats.lotsWon >= 1 ? 1 : 0;
   if (s.actions < 1 + extra) return { ok: false, why: 'Второй лот за день отнимает два действия.' };
 
   const limits = bidBots(s, lot);
@@ -330,13 +332,14 @@ export function placeBid(s, lotId, amount) {
 
 function takeLot(s, lot, price, note, spendAction = true, extra = 0) {
   s.actions -= (spendAction ? 1 : 0) + extra;
-  addCoins(s, -price, `лот «${lot.relics.map((r) => r.name).join(' + ')}»`);
+  const lotNames = lot.relics.map((r) => r.name).join(' + ');
+  addCoins(s, -price, null);
   lot.relics.forEach((r) => s.stash.push(r));
   lot.done = true;
   lot.winner = 'you';
   lot.soldPrice = price;
   s.dayStats.lotsWon += 1;
-  pushLog(s, `Куплено за ${fmt(price)} М: ${lot.relics.map((r) => r.name).join(', ')}`, 'good');
+  pushLog(s, `−${fmt(price)} М · лот «${lotNames}»`, 'bad');
   s.bots.forEach((b) => (b.budget = Math.max(0, b.budget - Math.round(price * 0.18))));
   const margin = lot.value - price;
   return { ok: true, won: true, price, note, lot, margin };
@@ -391,7 +394,7 @@ export function rerollMarket(s) {
 // ---------------------------------------------------------------- ПРИЛАВОК / ЛОМБАРД
 
 export function sellChance(s, relic) {
-  let pct = 1.02 + (s.broker ? 0.07 : 0) + Math.min(0.12, s.rep / 350);
+  let pct = 1.08 + (s.broker ? 0.08 : 0) + Math.min(0.14, s.rep / 320);
   if (relic.rarity === 'rare' || relic.rarity === 'fabled') pct += s.dayEvent?.sellRare || 0;
   pct += s.dayEvent?.sellMod || 0;
   return pct;
@@ -414,7 +417,7 @@ export function sellRelic(s, uid) {
 }
 
 export function pawnPrice(s, relic) {
-  return Math.round(relic.base * (0.6 + (s.dayEvent?.pawn || 0) + s.inflation * 0.004));
+  return Math.round(relic.base * (0.7 + (s.dayEvent?.pawn || 0) + s.inflation * 0.004));
 }
 
 export function pawn(s, uid) {
@@ -422,7 +425,7 @@ export function pawn(s, uid) {
   if (i < 0) return { ok: false, why: 'Такого предмета нет на столе.' };
   const relic = s.stash[i];
   const loan = pawnPrice(s, relic);
-  const fee = Math.round(loan * (0.12 + s.inflation * 0.01 + (s.dayEvent?.pawn || 0)));
+  const fee = Math.round(loan * (0.09 + s.inflation * 0.008));
   s.stash.splice(i, 1);
   addCoins(s, loan, `ломбард: ${relic.name}`);
   s.pledges.push({ relic, loan, fee, dueDay: s.day + 2 });
@@ -555,7 +558,7 @@ export function makeOrders(s) {
     const rarity = rng.weighted([['common', 40], ['fine', 33], ['rare', 22], ['fabled', 5]]);
     const house = rng.pick(HOUSES);
     const base = makeRelic(rng, { class: cls, rarity }).base;
-    const reward = Math.round(base * (2.5 + rng.float(0, 0.8)) + 50 + s.day * 12);
+    const reward = Math.round(base * (2.0 + rng.float(0, 0.5)) + 45 + s.day * 10);
     s.orders.push({
       id: `O${i}`,
       house: house.name,
@@ -696,7 +699,7 @@ export function startDuel(s) {
   const rival = makeRival(s, tier, tablePower(s));
   s.duel = {
     rival,
-    bet: Math.min(s.coins, 80),
+    bet: Math.min(s.coins, Math.max(20, Math.round(s.coins * 0.15))),
     maneuver: null,
     stage: 'choose',  // choose -> ready -> result
     result: null,
@@ -814,7 +817,7 @@ export function resolveDuel(s) {
   let payout = 0;
   const greed = d.rival.mod.id === 'greed';
   if (win) {
-    payout = Math.round(bet * 1.55 + 30 + s.day * 10 + (greed ? bet * 0.8 : 0));
+    payout = Math.round(bet * 0.9 + 35 + s.day * 12 + (greed ? bet * 0.9 : 0) + (bet === 0 ? 15 : 0));
     addCoins(s, payout, `дуэль: ${d.rival.name}`);
     changeRep(s, 3, 'победа в дуэли');
     s.dayStats.duelsWon += 1;
@@ -824,7 +827,7 @@ export function resolveDuel(s) {
   } else {
     payout = -Math.min(bet, s.coins);
     addCoins(s, payout, `дуэль: ${d.rival.name}`);
-    changeRep(s, -2, 'поражение');
+    changeRep(s, -1, 'поражение');
   }
   s.duelsToday += 1;
   s.dayStats.duels += 1;
@@ -994,7 +997,7 @@ export function nightLedger(s) {
   }
   s.inflation = Math.round((s.inflation + 0.22) * 10) / 10;
   if (s.rep > 25) changeRep(s, -2, 'город забывает');
-  if (s.broker) addCoins(s, Math.round(20 + s.day * 6), 'комиссия брокера за день');
+  if (s.broker) addCoins(s, Math.round(30 + s.day * 9), 'комиссия брокера за день');
   return { lines, lost, rent };
 }
 
@@ -1017,7 +1020,7 @@ export function endDay(s) {
 // ---------------------------------------------------------------- БРОКЕР
 
 export function brokerPrice(s) {
-  return 72 + s.day * 10 + s.inflation * 4;
+  return 55 + s.day * 8 + s.inflation * 3;
 }
 
 export function hireBroker(s) {
@@ -1052,7 +1055,7 @@ export function resolveFinal(s) {
   const mine = tablePower(s);
   const them = f.champion;
   const win = mine >= them;
-  const score = s.coins + (win ? 600 : 0) + s.rep * 6;
+  const score = s.coins + (win ? 700 : 0) + s.rep * 8 + mine * 2;
   f.mine = mine;
   f.win = win;
   f.score = score;

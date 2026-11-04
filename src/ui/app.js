@@ -231,8 +231,9 @@ function renderMarket() {
       </div>
     </div>
 
-    <div class="row" style="margin-top:16px">
-      <button class="btn btn--block" data-act="toTable">К столу →</button>
+    <div class="row" style="margin-top:16px;gap:8px">
+      <button class="btn btn--quiet" data-act="night" style="min-height:52px">${S.day >= E.DAYS ? 'к финалу' : 'закрыть день'}</button>
+      <button class="btn grow" data-act="toTable" style="min-height:52px">К столу →</button>
     </div>
     ${hintBox('market')}
   `;
@@ -602,10 +603,16 @@ function renderLedger() {
       <button class="btn btn--ghost btn--sm grow" data-act="export">код партии</button>
       <button class="btn btn--ghost btn--sm grow" data-act="rules">свод правил</button>
     </div>
-    <div class="row" style="margin-top:8px">
-      <button class="btn btn--quiet btn--block" data-act="night" ${S.phase === 'night' ? '' : ''}>${S.day >= E.DAYS ? 'к финалу' : 'закончить день'}</button>
+    <div class="dayend">
+      <div class="dayend__hint">
+        ${S.duelsToday < 3 && S.phase !== 'night'
+          ? `дуэлей сегодня: ${S.duelsToday} из 3`
+          : S.day >= E.DAYS ? 'шестой день прожит' : 'день можно закрывать'}
+      </div>
+      ${S.day >= E.DAYS
+        ? `<button class="btn btn--block" data-act="final" style="min-height:54px">Большой молоток →</button>`
+        : `<button class="btn btn--block" data-act="night" style="min-height:54px">закончить день ${S.day}</button>`}
     </div>
-    ${S.day >= E.DAYS ? `<div class="row" style="margin-top:8px"><button class="btn btn--block" data-act="final">Большой молоток →</button></div>` : ''}
   `;
 }
 
