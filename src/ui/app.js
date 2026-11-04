@@ -68,6 +68,19 @@ function load() {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return null;
     const plain = JSON.parse(raw);
+    // Миграция: сейв мог быть сделан прошлой версией игры. Досыпаем новые поля,
+    // иначе один undefined превращается в чёрный экран.
+    if (!Array.isArray(plain.orders)) plain.orders = [];
+    if (!Array.isArray(plain.stash)) plain.stash = [];
+    if (!Array.isArray(plain.history)) plain.history = [];
+    if (!Array.isArray(plain.pledges)) plain.pledges = [];
+    if (!plain.quota || typeof plain.quota !== 'object') plain.quota = { house: null, class: null, rarity: null, done: false };
+    if (!plain.deal) plain.deal = null;
+    if (!plain.mods || typeof plain.mods !== 'object') plain.mods = {};
+    if (!plain.flags || typeof plain.flags !== 'object') plain.flags = {};
+    if (!plain.dayStats || typeof plain.dayStats !== 'object') plain.dayStats = { lotsWon: 0, duels: 0, duelsWon: 0 };
+    if (!plain.market || !Array.isArray(plain.market.lots)) return null; // рынок не спасти — новая партия
+    if (plain.final && typeof plain.final !== 'object') plain.final = null;
     plain.rng = new RngShim(plain.seed, plain.day);
     return plain;
   } catch { return null; }

@@ -7,7 +7,8 @@
     "test": "node tests/invariants.mjs",
     "balance": "node tests/balance.js",
     "e2e": "node tests/e2e.mjs",
-    "serve": "http-server . -p 8080 -c-1 -a 0.0.0.0"
+    "serve": "http-server . -p 8080 -c-1 -a 0.0.0.0",
+    "test:e2e": "node tests/e2e.mjs && node tests/legacy-save.mjs"
   },
   "repository": {
     "type": "git",
