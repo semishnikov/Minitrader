@@ -792,7 +792,19 @@ export function chooseManeuver(s, key) {
   if (d.stage === 'result') return { ok: false, why: 'Дуэль уже решена.' };
   const m = MANEUVERS[key];
   if (!m) return { ok: false, why: 'Нет такого приёма.' };
-  if (d.maneuver && d.maneuver !== key) return { ok: false, why: 'Приём уже выбран. Решительно.' };
+  if (d.stage === 'resolved') return { ok: false, why: 'Бой уже решён.' };
+
+  /**
+   * Примерка приёма ограничена. Иначе дуэль превращается в перебор семи кнопок
+   * и математика соперника перестаёт что-либо значить.
+   * Первая примерка бесплатна, каждая следующая стоит денег и добавляет «шум зала».
+   */
+  if (d.maneuver && d.maneuver !== key) {
+    const fee = Math.max(6, Math.round(s.coins * 0.02));
+    if (s.coins < fee) return { ok: false, why: `Перебор стоит ${fmt(fee)} М.` };
+    addCoins(s, -fee, 'лишняя примерка приёма');
+    d.trials = (d.trials || 0) + 1;
+  }
   if (m.cost && s.coins < m.cost && d.maneuver !== key) return { ok: false, why: `Нужно ${m.cost} М.` };
   d.maneuver = key;
   d.stage = 'ready';
@@ -1153,19 +1165,85 @@ export function championPower(s) {
   return Math.round(150 + s.rep * 1.1 + Math.min(260, s.coins * 0.05));
 }
 
+/**
+ * Финал = последний аукцион. Монеты, репутация и стол — три разных ставки,
+ * и вложить всё сразу нельзя. Каждый ход открывает одну цену.
+ */
 export function startFinal(s) {
   s.phase = 'final';
+  const rng = new Rng(`${s.seed}-final-${s.day}`);
   s.final = {
     champion: championPower(s),
     stage: 'intro',
+    round: 0,
+    bought: { power: 0, rep: 0, coins: 0 },
+    picks: [],
+    lot: makeFinalLot(s, rng, 0),
   };
   return s.final;
+}
+
+/** Три лота подряд: сила, репутация, деньги — но покупать можно не все. */
+export function makeFinalLot(s, rng, i) {
+  const kinds = [
+    {
+      id: 'power', title: 'Ярмарочный молоток',
+      desc: 'Каждый удар вбивает твою вещь в общий стол. +сила до конца финала.',
+      price: Math.round(s.coins * 0.34) + 40,
+      gain: 'power', amount: () => Math.round(26 + s.day * 4),
+    },
+    {
+      id: 'rep', title: 'Слово старшины',
+      desc: 'Старшина говорит за тебя перед собранием. Репутация — это тоже сила.',
+      price: Math.round(s.coins * 0.22) + 30,
+      gain: 'rep', amount: () => 14,
+    },
+    {
+      id: 'coins', title: 'Тихая касса',
+      desc: 'Часть кассы прячется от чужих глаз: она пойдёт в итоговый счёт, но не в силу.',
+      price: Math.round(s.coins * 0.42) + 20,
+      gain: 'coins', amount: () => Math.round(s.coins * 0.5),
+    },
+  ];
+  const k = kinds[i % kinds.length];
+  return { ...k, id: `${k.id}-${i}`, kind: k.gain, idx: i };
+}
+
+export function buyFinalLot(s) {
+  const f = s.final;
+  if (!f || f.stage === 'done') return { ok: false, why: 'Финал уже решён.' };
+  if (f.round >= 2) return { ok: false, why: 'Больше двух ставок не сделать.' };
+  const lot = f.lot;
+  if (!lot) return { ok: false, why: 'Лот ушёл.' };
+  if (s.coins < lot.price) return { ok: false, why: `Нужно ${fmt(lot.price)} М.` };
+
+  addCoins(s, -lot.price, `финал: ${lot.title}`);
+  const amount = lot.amount();
+  if (lot.kind === 'power') {
+    f.bought.power += amount;
+    pushLog(s, `финал: молоток +${amount} силы`, 'brass');
+  } else if (lot.kind === 'rep') {
+    changeRep(s, amount, 'слово старшины');
+    f.bought.rep += amount;
+    pushLog(s, `финал: +${amount} репутации`, 'good');
+  } else {
+    // монеты не сгорают: они уходят в «тихую кассу» и считаются в очках
+    f.bought.coins += amount;
+    addCoins(s, amount, 'тихая касса');
+    pushLog(s, `финал: касса спрятана, +${fmt(amount)} М к счёту`, 'brass');
+  }
+  f.round += 1;
+  f.picks.push(lot.id);
+  f.rng = new Rng(`${s.seed}-final-next-${f.round}`);
+  f.lot = makeFinalLot(s, f.rng, f.round);
+  f.stage = f.round >= 2 ? 'ready' : 'bidding';
+  return { ok: true, amount, round: f.round, lot: f.lot, stage: f.stage };
 }
 
 export function resolveFinal(s) {
   const f = s.final;
   if (!f || f.stage === 'done') return { ok: false };
-  const mine = tablePower(s);
+  const mine = tablePower(s) + (f.bought?.power || 0);
   const them = f.champion;
   const win = mine >= them;
   const score = s.coins + (win ? 700 : 0) + s.rep * 8 + mine * 2;

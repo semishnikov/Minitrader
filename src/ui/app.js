@@ -507,10 +507,34 @@ function renderDuelStage(d) {
     ? (p.diff > 12 ? ['беру', 'good'] : p.diff > -8 ? ['на грани', 'brass'] : ['не по зубам', 'bad'])
     : (p.diffLow > 0 ? ['скорее беру', 'good'] : p.diffHigh < 0 ? ['скорее нет', 'bad'] : ['неизвестно', 'brass']);
 
+  // Прогноз по каждому приёму: считаем ту же математику, что и бой, но без разброса.
+  const forecast = (key) => {
+    const snap = S.duel.maneuver;
+    S.duel.maneuver = key;
+    const q = E.duelPreview(S);
+    S.duel.maneuver = snap;
+    return q;
+  };
   const maneuvers = Object.entries(E.MANEUVERS).map(([key, m]) => {
     const active = d.maneuver === key;
-    return `<button class="man ${active ? 'man--on' : ''}" data-act="maneuver" data-key="${key}">
+    const q = forecast(key);
+    // Пока соперник не изучен — показываем не «силу против коридора»,
+    // а запас: насколько твоя сила выше нижней границы и ниже верхней.
+    const ahead = q.diffLow;
+    const tone = ahead > 0 ? 'good' : q.diffHigh < 0 ? 'bad' : 'brass';
+    const label = known
+      ? (q.diff > 0 ? '+' + money(q.diff) : q.diff === 0 ? 'ровно' : money(q.diff))
+      : ahead > 0
+        ? `≥${money(-ahead)}`
+        : q.diffHigh < 0
+          ? `<${money(-q.diffHigh)}`
+          : 'на грани';
+    // Второй строкой — точный запас по нижней границе: именно он отличает приёмы друг от друга.
+    const sub = known ? '' : (ahead >= 0 ? `+${money(ahead)}` : money(ahead));
+    return `<button class="man man--${tone} ${active ? 'man--on' : ''}" data-act="maneuver" data-key="${key}">
       <span class="man__name">${m.name}</span>
+      <span class="man__forecast">${label}</span>
+      ${sub ? `<span class="man__sub">${sub} к худшему раскладу</span>` : ''}
       <span class="man__desc">${m.desc}</span>
       <span class="man__cost">${m.cost ? money(m.cost) + ' М' : '—'}</span>
     </button>`;
@@ -558,7 +582,7 @@ function renderDuelStage(d) {
         ${known && c.class === r.meta ? '<span class="metatag">мета</span>' : ''}</div>`).join('')}
     </div>
 
-    <div class="bar-sep" style="margin:18px 0 9px">Приём · один за бой</div>
+    <div class="bar-sep" style="margin:18px 0 9px">Приём · один за бой${man ? ' <span class="faint" style="letter-spacing:0">— можно передумать</span>' : ''}</div>
     <div class="mangrid">${maneuvers}</div>
 
     <div class="bar-sep" style="margin:18px 0 9px">Ставка · ${d.bet ? money(d.bet) + ' М на кон' : 'без ставки'}</div>
@@ -574,7 +598,7 @@ function renderDuelStage(d) {
     <div class="duelcta">
       <button class="btn btn--quiet" data-act="leaveDuel" style="min-height:52px">уйти</button>
       ${man
-        ? `<button class="btn grow" data-act="resolveDuel" style="min-height:52px">${man.name === 'Дознание' ? 'вскрыть и в бой' : 'в бой'}</button>`
+        ? `<button class="btn grow" data-act="resolveDuel" style="min-height:52px">${man.name === 'Дознание' ? 'вскрыть и в бой' : 'в бой · ' + man.name.toLowerCase()}</button>`
         : `<button class="btn grow" data-act="toManeuvers" style="min-height:52px">выбрать приём ↑</button>`}
     </div>
   `;
@@ -1103,22 +1127,76 @@ function finishDay() {
 
 function startFinale() {
   E.startFinal(S);
+  renderFinale();
+}
+
+function renderFinale() {
   const f = S.final;
-  const my = E.tablePower(S);
-  const win = my >= f.champion;
+  const my = E.tablePower(S) + (f.bought?.power || 0);
+  const lot = f.lot;
+  const left = 2 - f.round;
+  const done = f.round >= 2;
+  const bought = [
+    f.bought.power ? `+${f.bought.power} силы` : '',
+    f.bought.rep ? `+${f.bought.rep} репутации` : '',
+    f.bought.coins ? `+${money(f.bought.coins)} М в кассу` : '',
+  ].filter(Boolean);
+
   openModal(`
     <div class="eyebrow">Финал · Большой молоток</div>
-    <div class="modal__title">${win ? 'Ты берёшь молоток' : 'Молоток уходит другому'}</div>
-    <div class="small dim">Финальная дуэль против собрания всей ярмарки. Судят стол и репутация.</div>
+    <div class="modal__title">${done ? 'Молоток занесён' : 'Последний торг'}</div>
+    <div class="small dim">Собрание ярмарки уже собрало свою силу. У тебя ${left} ${left === 1 ? 'ставка' : 'ставки'} — вложи их туда, где больше толку.</div>
+
     <div class="panel pad" style="margin-top:14px">
       <div class="row row--between">
         <div><div class="tiny faint">твой стол</div><div class="duelbar__v me">${money(my)}</div></div>
         <div class="faint" style="font-family:var(--f-serif)">против</div>
         <div style="text-align:right"><div class="tiny faint">собрание</div><div class="duelbar__v them">${money(f.champion)}</div></div>
       </div>
+      <div class="tiny ${my >= f.champion ? 'num-good' : 'num-red'}" style="margin-top:8px">
+        ${my >= f.champion ? 'сила уже выше — можно не тратиться' : `не хватает ${money(f.champion - my)} силы`}
+      </div>
     </div>
-    <button class="btn btn--block" style="margin-top:14px" data-act="finalGo">взмахнуть</button>
-  `, { after: () => { MODAL.querySelector('[data-act=finalGo]').onclick = () => { E.resolveFinal(S); closeModal(); showResult(); }; } });
+
+    ${!done && lot ? `<div class="final-lot">
+      <div class="tiny faint">лот ${f.round + 1} из 2</div>
+      <div class="final-lot__title">${esc(lot.title)}</div>
+      <div class="final-lot__desc">${esc(lot.desc)}</div>
+      <div class="row row--between" style="margin-top:10px;align-items:center">
+        <div class="deal__price">${money(lot.price)}<span>М</span></div>
+        <button class="btn btn--sm" data-act="finalBuy" ${S.coins < lot.price ? 'disabled' : ''}>
+          ${S.coins < lot.price ? 'не хватает' : 'взять'}
+        </button>
+      </div>
+      ${S.coins < lot.price ? '<div class="tiny faint" style="margin-top:6px">Цена выше кассы — пропусти лот, деньги пригодятся в счёте.</div>' : ''}
+    </div>` : ''}
+
+    ${bought.length ? `<div class="tiny num-brass" style="margin-top:10px">куплено: ${bought.join(' · ')}</div>` : ''}
+
+    <div class="row" style="margin-top:14px;gap:8px">
+      ${!done
+        ? `<button class="btn btn--ghost grow" data-act="finalSkip">пропустить лот</button>
+           <button class="btn grow" data-act="finalGo">взмахнуть</button>`
+        : `<button class="btn btn--block" data-act="finalGo">взмахнуть</button>`}
+    </div>
+    <div class="tiny faint" style="margin-top:8px;text-align:center">Проигрыш — не конец: касса и молоток идут в итоговый счёт.</div>
+  `, { after: () => {
+    MODAL.querySelectorAll('[data-act=finalBuy]').forEach((b) => { b.onclick = () => {
+      const r = E.buyFinalLot(S, 0);
+      if (!r.ok) return toast(esc(r.why), 'bad');
+      sound.coin(); buzz(12); save(); renderFinale();
+    }; });
+    const skip = MODAL.querySelector('[data-act=finalSkip]');
+    if (skip) skip.onclick = () => {
+      if (S.final.round >= 1) { toast('Все ставки уже сделаны.', 'bad'); return; }
+      S.final.round += 1;
+      S.final.lot = E.makeFinalLot(S, S.rng, S.final.round);
+      S.final.stage = S.final.round >= 2 ? 'ready' : 'bidding';
+      save(); renderFinale();
+    };
+    MODAL.querySelector('[data-act=finalGo]').onclick = () => { E.resolveFinal(S); closeModal(); showResult(); };
+  } });
+  renderHUD();
 }
 
 function showResult() {
@@ -1239,6 +1317,11 @@ function boot() {
     S.rng = new RngShim(S.seed, saved.day);
     lastCoins = S.coins;
     render();
+    // Если партия уже дошла до финала — возвращаем игрока на последний торг,
+    // иначе он «теряет» купленные ставки и видит старое утро.
+    if (S.phase === 'final' && S.final && S.final.stage !== 'done') {
+      setTimeout(() => { if (!document.querySelector('.modal-layer.on')) renderFinale(); }, 260);
+    }
   } else {
     splash();
   }

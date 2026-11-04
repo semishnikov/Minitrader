@@ -58,35 +58,71 @@ function normalPlayer(cfg = {}) {
 }
 
 /** «Эксперт»: знает пределы (модель сильного игрока, который выучил ботов). */
+/**
+ * «Эксперт» — не просто аккуратная версия обычного игрока.
+ * Он: читает цену против каталога, держит тройки, берёт слоты под них,
+ * покупает брокера ради квоты, торгуется по коридору силы и уходит из плохих боёв.
+ */
 function expert() {
-  const p = normalPlayer({ overpay: 1.25, maneuver: 'probe' });
+  const p = normalPlayer({ overpay: 1.15, maneuver: 'nest' });
   p.name = 'Эксперт';
+
   p.market = (s) => {
-    const lots = s.market.lots.filter((l) => !l.done).sort((a, b) => a.price / a.value - b.price / b.value);
+    // 1) Сделка дня: считаем, выгодна ли она по каталогу.
+    const d = s.deal;
+    if (d && !d.used && d.kind !== 'pawn') {
+      const worth = d.relic ? d.relic.base : (d.relics || []).reduce((a, r) => a + r.base, 0);
+      if (worth > d.price * 1.05 || d.kind === 'bundles') E.takeDeal(s);
+    }
+    // 2) Лоты: приоритет — класс, который ждёт дом, и повтор класса на столе.
+    const wants = new Set(s.orders.filter((o) => !o.done).map((o) => o.class));
+    const lots = s.market.lots.filter((l) => !l.done);
+    lots.sort((a, b) => a.price / a.value - b.price / b.value);
     for (const lot of lots) {
       if (s.actions <= 0) break;
+      const ratio = lot.price / lot.value;
+      if (ratio > 1.05) continue;
       const top = E.bidBots(s, lot)[0];
-      const snipe = Math.round(top.max * 0.97);
-      if (snipe < lot.value * 1.02 && snipe < s.coins - 40) E.placeBid(s, lot.id, snipe);
+      if (!top) continue;
+      const fitsOrder = lot.relics.some((r) => wants.has(r.class));
+      const ceiling = lot.value * (fitsOrder ? 1.3 : 1.1);
+      // Перебиваем лидера ровно на шаг: платим минимум, но забираем лот.
+      const bid = Math.min(Math.round(top.max + 2), ceiling);
+      if (bid > top.max && bid <= s.coins - 50) E.placeBid(s, lot.id, bid);
     }
+    // 3) Брокер: раскрывает квоту и поднимает прилавок.
+    if (!s.broker && s.coins > E.brokerPrice(s) + 240) E.hireBroker(s);
   };
+
+  p.table = (s) => {
+    for (const o of s.orders) if (!o.done && E.orderReady(s, o)) E.fulfilOrder(s, o.id);
+    // квота закрывается сама при сдаче/продаже нужной вещи — просто держим её на столе
+    const q = s.quota;
+    if (s.maxSlots < 8 && s.coins > E.slotCost(s) + 110) E.buySlot(s);
+    const tri = E.tripleClasses(s.stash);
+    const keep = new Set(s.stash.filter((r) => tri.includes(r.class) || r.rarity !== 'common').map((r) => r.uid));
+    for (const r of [...s.stash]) if (!keep.has(r.uid) && s.stash.length > 3) E.sellRelic(s, r.uid);
+  };
+
   p.duels = (s) => {
+    let risky = 0;
     while (s.duelsToday < 3 && s.stash.length >= 2) {
       if (!E.startDuel(s).ok) break;
-      E.chooseManeuver(s, 'probe'); // вскрывает туз
-      const opts = ['feint', 'word', 'silence', 'tower', 'swap', 'nest'];
+      // Сначала «Дознание» — оно платное, поэтому один раз и только на хорошем столе.
       let best = null;
-      for (const k of opts) {
-        E.chooseManeuver(s, k);
+      for (const k of ['feint', 'tower', 'nest', 'word']) {
+        if (!E.chooseManeuver(s, k).ok) continue;
         const q = E.duelPreview(s);
-        if (!best || q.diff > best.diff) best = { k, diff: q.diff };
+        if (!best || q.diffLow > best.diffLow) best = { k, diffLow: q.diffLow };
       }
+      if (!best || best.diffLow <= 0) { E.closeDuel(s); break; }
       E.chooseManeuver(s, best.k);
-      if (best.diff < -20 && s.coins < 250) { E.closeDuel(s); break; }
-      E.setBet(s, Math.min(Math.floor(s.coins * 0.3), 220));
+      const frac = best.diffLow > 25 ? 0.3 : 0.16;
+      E.setBet(s, Math.round(s.coins * frac));
       E.resolveDuel(s);
       E.closeDuel(s);
-      if (s.coins < 80) break;
+      risky += 1;
+      if (s.coins < 100) break;
     }
   };
   return p;
@@ -133,7 +169,7 @@ function clever(){
     while (s2.duelsToday < 3 && s2.stash.length >= 1) {
       if (!E.startDuel(s2).ok) break;
       E.chooseManeuver(s2, 'probe');
-      const opts=['feint','word','silence','tower','swap','nest'];
+      const opts=['feint','tower','nest'];
       let best=null;
       for (const k of opts){ E.chooseManeuver(s2,k); const q=E.duelPreview(s2); if(!best||q.diff>best.diff) best={k,diff:q.diff}; }
       if (best.diff < -10) { E.closeDuel(s2); break; }
