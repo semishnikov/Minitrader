@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#0e0f13" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="description" content="Ярмарка Отблесков — торговая игра об аукционах, реликвиях и дуэлях заказов." />
+<title>Ярмарка Отблесков</title>
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="icon" href="./icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="./icon-180.png" />
+<link rel="stylesheet" href="./src/ui/styles.css" />
+</head>
+<body>
+  <div id="app" class="app">
+    <div class="paper" aria-hidden="true"></div>
+    <header class="hud" id="hud"></header>
+    <main class="screen" id="screen" aria-live="polite"></main>
+    <nav class="dock" id="dock"></nav>
+  </div>
+  <div class="toast-layer" id="toasts" aria-live="assertive"></div>
+  <div class="modal-layer" id="modal"></div>
+
+  <script type="module" src="./src/ui/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "Ярмарка Отблесков",
+  "short_name": "Отблески",
+  "description": "Торговая игра: аукционы, ломбард, слухи и дуэли заказов.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0d11",
+  "theme_color": "#0b0d11",
+  "lang": "ru",
+  "categories": ["games"],
+  "icons": [
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
