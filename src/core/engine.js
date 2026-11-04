@@ -902,7 +902,17 @@ export function resolveDuel(s) {
   s.dayStats.duels += 1;
 
   d.stage = 'result';
-  d.result = { win, tie, mine, them, bet, payout, greed };
+  // Из чего сложилась сила: стол + мой приём (эффект = остаток после стола).
+  const me = MANEUVERS[d.maneuver] || {};
+  const tablePower = p.myTable ? p.myTable.power : 0;
+  const maneuverEffect = p.mine - tablePower;
+  const breakdown = [['твой стол', String(tablePower)]];
+  if (maneuverEffect !== 0) {
+    breakdown.push([`приём «${me.name || '—'}»`, (maneuverEffect > 0 ? '+' : '−') + Math.abs(maneuverEffect), maneuverEffect >= 0 ? 'good' : 'bad']);
+  }
+  breakdown.push(['итог твоей силы', String(mine)]);
+  breakdown.push(['его сила', String(them)]);
+  d.result = { win, tie, mine, them, bet, payout, greed, breakdown, maneuver: d.maneuver };
   return { ok: true, result: d.result };
 }
 

@@ -586,7 +586,8 @@ function renderDuelStage(d) {
       range.style.setProperty('--fill', `${(range.value / Math.max(1, S.coins)) * 100}%`);
       const v = $('.betrow__v', SCREEN);
       const b = S.duel.bet;
-      v.innerHTML = `<b>${money(b)}</b><small>${b ? 'при победе +' + money(Math.round(b * 1.55 + 30 + S.day * 10)) + ' М' : 'без ставки — только репутация'}</small>`;
+      const winPay = b ? Math.round(b * 0.9 + 35 + S.day * 12) : 50;
+      v.innerHTML = `<b>${money(b)}</b><small>${b ? 'при победе +' + money(winPay) + ' М' : 'без ставки — только репутация'}</small>`;
       renderHUD();
     });
   }
@@ -609,7 +610,28 @@ function renderDuelResult(d) {
         <span class="small dim">итог по кассе</span>
         <span class="mono" style="font-size:20px;color:${res.payout >= 0 ? 'var(--green)' : 'var(--red)'}">${res.payout >= 0 ? '+' : '−'}${money(Math.abs(res.payout))} М</span>
       </div>
-      ${res.greed ? `<div class="tiny num-brass" style="margin-top:6px">Жадность: он проиграл и заплатил вдвое.</div>` : ''}
+      ${res.greed && res.win ? `<div class="tiny num-brass" style="margin-top:6px">У него был козырь «Жадность» — проиграв, он платит вдвое. Ты этим и воспользовался.</div>` : ''}
+      ${res.greed && !res.win ? `<div class="tiny faint" style="margin-top:6px">Он жадный: проиграй он — заплатил бы вдвое. Но сила была на его стороне.</div>` : ''}
+    </div>
+
+    ${res.breakdown ? `<div class="panel pad" style="margin-top:10px">
+      <div class="tiny faint" style="margin-bottom:7px">как сложилась сила</div>
+      ${res.breakdown.map((b) => `<div class="row row--between" style="padding:3px 0">
+        <span class="small dim">${esc(b[0])}</span>
+        <span class="mono small ${b[2] === 'bad' ? 'num-red' : b[2] === 'good' ? 'num-good' : 'num-brass'}">${b[1]}</span>
+      </div>`).join('')}
+    </div>` : ''}
+
+    <div class="panel pad" style="margin-top:10px">
+      <div class="tiny faint" style="margin-bottom:7px">что запомнить</div>
+      <div class="small dim">${res.win
+        ? (d.maneuver === 'nest' ? 'Гнездо бьёт почти всех, но стоит дорого — держи его на финале.'
+          : d.maneuver === 'feint' ? 'Обманка ломает «Хитрость». Против сильных соперников — лучший размен.'
+          : d.maneuver === 'tower' ? 'Башня сильна только с тройкой на столе.'
+          : 'Приём сработал. У соперника был скрытый козырь — в следующий раз попробуй «Дознание».')
+        : (d.maneuver === 'probe' ? 'Дознание силой не бьёт — оно готовит следующие бои.'
+          : 'Твой приём оказался слабее. Попробуй другой: у каждого — своя цена и свой контрприём.')}
+      </div>
     </div>
     <div class="row" style="margin-top:16px;gap:8px">
       <button class="btn grow" data-act="nextDuel">${S.duelsToday >= 3 ? 'к ночи' : 'следующий соперник'}</button>
