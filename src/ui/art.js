@@ -340,6 +340,22 @@ const INK = [
 
 const SETS = { amber: AMBER, bone: BONE, porcel: PORCEL, glass: GLASS, brass: BRASS, ink: INK };
 
+// Имя → индекс силуэта. Гравюра должна соответствовать названию.
+const VARIANT_BY_NAME = {
+  'Слеза софоры': 0, 'Пчелиный гребень': 2, 'Янтарь-пузырь': 1, 'Сердце капли': 0,
+  'Смола с пальцем': 2, 'Пчела в камне': 2,
+  'Костяной гребень': 1, 'Позвонок старца': 0, 'Челюсть певца': 1, 'Трубка из бедра': 2,
+  'Палец аббата': 0, 'Клык с насечкой': 2,
+  'Чашка с трещиной': 0, 'Блюдце русалки': 2, 'Ваза без дна': 1, 'Голова куклы': 1,
+  'Суповой сервиз': 0, 'Пиала с изъяном': 2,
+  'Слепок окна': 1, 'Мениск': 0, 'Линза часовщика': 0, 'Капля собора': 2,
+  'Плафон': 2, 'Осколок витража': 1,
+  'Шестерня без зуба': 0, 'Ключ от ниоткуда': 1, 'Верньер': 2, 'Гиря в оправе': 0,
+  'Метроном': 2, 'Замок без двери': 1,
+  'Пятно чернил': 0, 'Обрывок письма': 2, 'Подпись без имени': 1, 'Печать нотариуса': 1,
+  'Письмо без адреса': 2, 'Клякса в форме сердца': 0,
+};
+
 const GRADS = {
   aus: `<linearGradient id="aus" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe1a0" stop-opacity=".9"/><stop offset=".45" stop-color="#d9932f" stop-opacity=".62"/><stop offset="1" stop-color="#6e3c0e" stop-opacity=".9"/></linearGradient>`,
   bon: `<linearGradient id="bon" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="#fffaf0" stop-opacity=".92"/><stop offset=".55" stop-color="#d8c9ae" stop-opacity=".5"/><stop offset="1" stop-color="#6f6553" stop-opacity=".78"/></linearGradient>`,
@@ -354,15 +370,34 @@ const PIPS = { common: 1, fine: 2, rare: 3, fabled: 4 };
 /** Гравюра реликвии. uid обязателен, чтобы градиенты и клипы не пересекались. */
 const GRAD_KEY = { amber: 'aus', bone: 'bon', porcel: 'por', glass: 'gla', brass: 'bra', ink: 'ink' };
 
+/** Орнамент вокруг предмета — свой у каждого имени. Тонкая латунная вязь. */
+function ornament(seed, rar) {
+  const kind = Math.floor(seed * 5) % 5;
+  const ring = `<circle cx="50" cy="50" r="${rar >= 3 ? 41 : 38}" fill="none" stroke="currentColor" stroke-width=".45" opacity=".38" stroke-dasharray="${rar >= 3 ? '1 3' : '2 6'}"/>`;
+  const marks = (n, r0, r1, w = .5) => Array.from({ length: n }, (_, i) => {
+    const a = (i / n) * Math.PI * 2 + seed * 3;
+    return `<line x1="${f(50 + Math.cos(a) * r0)}" y1="${f(50 + Math.sin(a) * r0)}" x2="${f(50 + Math.cos(a) * r1)}" y2="${f(50 + Math.sin(a) * r1)}" stroke="currentColor" stroke-width="${w}" opacity=".34"/>`;
+  }).join('');
+  if (kind === 0) return ring + marks(12, 36, 41);
+  if (kind === 1) return marks(8, 34, 42, .55) + marks(8, 30, 32, .4);
+  if (kind === 2) return `<path d="M50 9 L54 16 L50 23 L46 16 Z M50 91 L54 84 L50 77 L46 84 Z" fill="none" stroke="currentColor" stroke-width=".5" opacity=".4"/>` + ring;
+  if (kind === 3) return `<circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-width=".4" opacity=".3"/>` + marks(4, 40, 45, .6) + marks(4, 33, 35, .4);
+  return ring + `<circle cx="50" cy="50" r="34" fill="none" stroke="currentColor" stroke-width=".35" opacity=".22"/>`;
+}
+
 export function relicArt(relic) {
   const seed = hash(relic.name + relic.class);
   const set = SETS[relic.class] || SETS.amber;
-  const variant = Math.floor(seed * set.length) % set.length;
+  const byName = VARIANT_BY_NAME[relic.name];
+  const variant = byName != null ? byName % set.length : Math.floor(seed * set.length) % set.length;
   const id = `q${Math.floor(seed * 1e7).toString(36)}${(relic.uid || '').replace(/\D/g, '').slice(-3)}`;
   const { defs, body } = set[variant](seed, id);
   const grad = GRADS[GRAD_KEY[relic.class] || 'aus'].replaceAll('id="', `id="${id}-`);
-  return `<svg viewBox="13 8 74 86" class="art" aria-hidden="true" style="color:currentColor">
-    <defs>${grad}${defs}</defs>${body}</svg>`;
+  const rar = PIPS[relic.rarity] || 1;
+  return `<svg viewBox="10 6 80 90" class="art" aria-hidden="true" style="color:currentColor">
+    <defs>${grad}${defs}</defs>
+    <g opacity=".85">${ornament(seed, rar)}</g>
+    ${body}</svg>`;
 }
 
 export function crest(size = 76) {
