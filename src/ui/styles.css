@@ -686,8 +686,9 @@ input[type='range']::-moz-range-thumb {
 .toast-layer {
   position: fixed;
   z-index: 120;
-  top: calc(env(safe-area-inset-top, 0px) + 98px);
+  top: calc(env(safe-area-inset-top, 0px) + 96px);
   bottom: auto;
+  padding: 0 4px;
   left: 50%;
   transform: translateX(-50%);
   width: min(480px, calc(100% - 24px));
@@ -719,6 +720,7 @@ input[type='range']::-moz-range-thumb {
 /* ---------- Всплывающие числа ---------- */
 .floatnum {
   position: fixed;
+  transform-origin: left center;
   z-index: 110;
   font-family: var(--f-num);
   font-size: 20px;
@@ -1029,3 +1031,65 @@ input[type='range']:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px 
   text-align: center; font-size: 11px; color: var(--ink-faint);
   letter-spacing: .05em; margin-bottom: 7px;
 }
+
+/* ---------- Тач-эргономика: всё важное не меньше 40px ---------- */
+.btn--xs { min-height: 40px; padding: 0 12px; font-size: 12px; }
+.btn--sm { min-height: 44px; }
+.hud__acts { min-height: 32px; display: flex; align-items: center; gap: 6px; padding: 0 4px; }
+.hud__rep { min-height: 32px; display: inline-flex; align-items: center; }
+.man { min-height: 68px; }
+.stepper__b, .betrow__b { min-height: 48px; }
+.dock__b { min-height: 54px; }
+.btn--quiet[data-act="help"], .btn--xs.btn--quiet { min-height: 40px; }
+/* мелкие кнопки лотов — но не меньше 40 */
+.lot__aside .btn { min-width: 70px; }
+.slot-hint, .tiny { -webkit-text-size-adjust: 100%; }
+
+/* Лоты: блокировка без грязной кнопки */
+.lot__locked {
+  font-family: var(--f-display);
+  font-size: 9.5px; line-height: 1.25;
+  letter-spacing: .06em;
+  text-align: right;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  opacity: .75;
+}
+/* Слой тостов: аккуратнее, без наложения на заголовок */
+.toast-layer { gap: 5px; }
+.toast-layer .toast { animation: toastIn .26s var(--snap) both; }
+.toast { padding: 8px 11px; font-size: 12px; backdrop-filter: blur(8px); }
+
+/* ---------- Сделка дня ---------- */
+.deal {
+  margin-top: 12px;
+  padding: 12px 13px;
+  border-radius: 13px;
+  border: 1px solid rgba(217,162,83,.34);
+  background:
+    linear-gradient(150deg, rgba(217,162,83,.10), rgba(217,162,83,.02) 60%),
+    linear-gradient(180deg, #191d24, #14171d);
+  position: relative;
+  overflow: hidden;
+}
+.deal::after {
+  content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(115deg, rgba(255,240,214,.035) 0 2px, transparent 2px 9px);
+  pointer-events: none;
+}
+.deal--done { opacity: .5; border-color: var(--line-soft); background: rgba(236,229,215,.03); }
+.deal__eyebrow {
+  font-family: var(--f-display); font-size: 10px; letter-spacing: .17em;
+  text-transform: uppercase; color: var(--brass);
+}
+.deal__title {
+  font-family: var(--f-serif); font-size: 18px; font-weight: 600;
+  margin-top: 3px; color: var(--ink); line-height: 1.1;
+}
+.deal__desc { font-size: 12px; line-height: 1.4; color: var(--ink-dim); margin-top: 5px; }
+.deal__row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; }
+.deal__price {
+  font-family: var(--f-num); font-size: 22px; font-weight: 600;
+  font-variant-numeric: tabular-nums; color: var(--brass-hi);
+}
+.deal__price span { font-size: 11px; color: var(--ink-faint); margin-left: 3px; font-family: var(--f-body); font-weight: 400; }

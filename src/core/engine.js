@@ -119,6 +119,7 @@ export function startDay(s) {
   s.broker = false;
   s.dayStats = { earned: 0, spent: 0, lotsWon: 0, duels: 0, duelsWon: 0, orders: 0 };
   s.dayEvent = pickDayEvent(s.rng);
+  s.deal = makeDeal(s);
   s.rerolled = false;
   makeMarket(s);
   makeOrders(s);
@@ -139,6 +140,69 @@ const DAY_EVENTS = [
 
 function pickDayEvent(rng) {
   return rng.pick(DAY_EVENTS);
+}
+
+/**
+ * «Сделка дня» — одна на утро, действует только сегодня.
+ * Появляется не каждый день; иногда это приманка (перекупщик цену знает, ты нет).
+ */
+export function makeDeal(s) {
+  const rng = new Rng(`${s.seed}-deal-${s.day}`);
+  if (!rng.chance(0.62)) return null;
+  const kind = rng.weighted([['sealed', 40], ['bundles', 30], ['rare', 20], ['pawn', 10]]);
+  const base = { kind, used: false };
+  if (kind === 'sealed') {
+    const relic = makeRelic(rng, { rarity: rng.weighted([['fine', 45], ['rare', 40], ['fabled', 15]]) });
+    base.relic = relic;
+    base.price = Math.round(relic.base * rng.float(1.1, 1.55));   // закрытый конверт: ценность неизвестна
+    base.bluff = rng.chance(0.3);                                  // иногда перекупщик просто наживается
+    base.title = 'Закрытый конверт';
+    base.desc = 'Торговец не показывает вещь. Говорит, что «та ещё находка». Верить или нет — твоё дело.';
+  } else if (kind === 'bundles') {
+    const a = makeRelic(rng, { rarity: 'common' });
+    const b = makeRelic(rng, { rarity: 'common' });
+    base.relics = [a, b];
+    base.price = Math.round((a.base + b.base) * rng.float(0.55, 0.8));
+    base.title = 'Связка «на сдачу»';
+    base.desc = 'Две вещи разом по одной цене. Вторая — почти бесплатно.';
+  } else if (kind === 'rare') {
+    const relic = makeRelic(rng, { rarity: 'rare' });
+    base.relic = relic;
+    base.price = Math.round(relic.base * rng.float(1.2, 1.65));
+    base.title = 'Редкость из-под прилавка';
+    base.desc = 'Продавец клянётся, что вещь с историей. Смотри сам: переплата возможна.';
+  } else {
+    base.title = 'Займ у ростовщика';
+    base.desc = 'До вечера можно взять 120 М под залог репутации. Не вернёшь — заплатишь дважды.';
+    base.loan = 120;
+  }
+  return base;
+}
+
+export function takeDeal(s) {
+  const d = s.deal;
+  if (!d || d.used) return { ok: false, why: 'Сделка уже закрыта.' };
+  if (s.coins < (d.price || 0)) return { ok: false, why: `Нужно ${fmt(d.price)} М.` };
+  if (d.kind === 'pawn') {
+    if (s.flags.dealDebt) return { ok: false, why: 'Долг уже висит.' };
+    d.used = true;
+    addCoins(s, d.loan, 'займ у ростовщика');
+    s.flags.dealDebt = { day: s.day, amount: Math.round(d.loan * 1.45) };
+    return { ok: true, text: `Взято ${fmt(d.loan)} М. Вечером вернуть ${fmt(s.flags.dealDebt.amount)} М.` };
+  }
+  const relics = d.relic ? [d.relic] : d.relics;
+  if (s.stash.length + relics.length > s.maxSlots) return { ok: false, why: 'На столе нет места.' };
+  d.used = true;
+  addCoins(s, -d.price, `сделка: ${d.title.toLowerCase()}`);
+  relics.forEach((r) => s.stash.push(r));
+  const worth = relics.reduce((a, r) => a + r.base, 0);
+  return {
+    ok: true,
+    relics,
+    worth,
+    profit: worth - d.price,
+    text: relics.map((r) => `${r.name} (${fmt(r.base)} М)`).join(', '),
+  };
 }
 
 // ---------------------------------------------------------------- РЫНОК
@@ -995,6 +1059,13 @@ export function nightLedger(s) {
     changeRep(s, -4 * lost, 'заклады пропали в ломбарде');
     s.pledges = s.pledges.filter((p) => p.dueDay > s.day);
   }
+  if (s.flags.dealDebt) {
+    const dbt = s.flags.dealDebt;
+    const pay = Math.min(s.coins, dbt.amount);
+    addCoins(s, -pay, 'долг ростовщику');
+    if (pay < dbt.amount) changeRep(s, -8, 'долг ростовщику не закрыт');
+    s.flags.dealDebt = null;
+  }
   s.inflation = Math.round((s.inflation + 0.22) * 10) / 10;
   if (s.rep > 25) changeRep(s, -2, 'город забывает');
   if (s.broker) addCoins(s, Math.round(30 + s.day * 9), 'комиссия брокера за день');
@@ -1029,7 +1100,10 @@ export function hireBroker(s) {
   if (s.coins < cost) return { ok: false, why: `Нужно ${fmt(cost)} М.` };
   addCoins(s, -cost, 'наём брокера');
   s.broker = true;
-  return { ok: true, cost };
+  // Брокер знает город: раскрывает «немую квоту» дома.
+  const q = s.quota;
+  if (q && !q.done) q.revealed = true;
+  return { ok: true, cost, quota: q };
 }
 
 // ---------------------------------------------------------------- ФИНАЛ

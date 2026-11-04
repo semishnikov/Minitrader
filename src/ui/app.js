@@ -77,10 +77,10 @@ function meta() { try { return JSON.parse(localStorage.getItem(META_KEY) || '{}'
 function setMeta(m) { try { localStorage.setItem(META_KEY, JSON.stringify({ ...meta(), ...m })); } catch {} }
 
 // ---------------------------------------------------------------- тосты / числа
-function toast(text, tone = '', ms = 2600) {
+function toast(text, tone = '', ms = 1900) {
   const t = h(`<div class="toast ${tone ? 'toast--' + tone : ''}">${text}</div>`);
   TOASTS.appendChild(t);
-  while (TOASTS.children.length > 3) TOASTS.firstElementChild.remove();
+  while (TOASTS.children.length > 1) TOASTS.firstElementChild.remove();
   setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 260); }, ms);
 }
 
@@ -151,7 +151,7 @@ function renderHUD() {
     <div class="hud__row" style="margin-top:6px">
       <div class="hud__round" style="letter-spacing:.1em">${esc(phaseLabel)}${event ? ' · ' + esc(event) : ''}</div>
       <div class="grow"></div>
-      <button class="btn btn--xs btn--quiet" data-act="help" style="min-height:24px;font-size:10px">свод правил</button>
+      <button class="btn btn--xs btn--quiet" data-act="help" style="font-size:10.5px;padding:0 10px">правила</button>
     </div>
     <div class="hud__bar">${Array.from({ length: S.maxActions }, (_, i) => `<i class="${i < S.actions ? 'on' : ''}"></i>`).join('')}</div>`;
 }
@@ -200,7 +200,9 @@ function renderMarket() {
   SCREEN.innerHTML = `
     <h2 class="h-title" style="margin-top:2px">${esc(styleName)}</h2>
     <p class="h-sub">${esc(styleNote)}</p>
-    ${S.dayEvent ? `<div class="panel pad" style="margin-top:12px;border-color:var(--line)">
+    ${dealCard()}
+
+    ${S.dayEvent ? `<div class="panel pad" style="margin-top:10px;border-color:var(--line-soft)">
       <div class="row"><span class="chip chip--brass">${esc(S.dayEvent.name)}</span></div>
       <div class="small dim" style="margin-top:6px">${esc(S.dayEvent.desc)}</div>
     </div>` : ''}
@@ -209,10 +211,10 @@ function renderMarket() {
     <div class="stack">${lotsHtml}</div>
 
     <div class="row" style="margin-top:12px;gap:8px">
-      <button class="btn btn--ghost btn--sm grow" data-act="reroll" ${S.rerolled ? 'disabled' : ''}>
-        ${S.rerolled ? 'зал уже меняли' : `другой зал · ${35 + S.day * 8} М`}
+      <button class="btn btn--ghost btn--sm grow" data-act="reroll" ${S.rerolled || S.actions <= 0 ? 'disabled' : ''}>
+        ${S.rerolled ? 'зал уже меняли' : S.actions <= 0 ? 'торг закрыт' : `другой зал · ${35 + S.day * 8} М`}
       </button>
-      <button class="btn btn--ghost btn--sm grow" data-act="rumor">
+      <button class="btn btn--ghost btn--sm grow" data-act="rumor" ${S.rumor ? 'disabled' : ''}>
         ${S.rumor ? 'слух уже гуляет' : `слух · ${30 + S.day * 6} М`}
       </button>
     </div>
@@ -239,6 +241,30 @@ function renderMarket() {
   `;
 }
 
+function dealCard() {
+  const d = S.deal;
+  if (!d) return '';
+  if (d.used) {
+    return `<div class="deal deal--done">
+      <div class="deal__eyebrow">Сделка дня</div>
+      <div class="deal__title">${esc(d.title)} · закрыто</div>
+    </div>`;
+  }
+  const price = d.kind === 'pawn' ? d.loan : d.price;
+  const suffix = d.kind === 'pawn' ? 'до вечера' : 'М';
+  return `<div class="deal">
+    <div class="deal__eyebrow">Сделка дня · только сегодня</div>
+    <div class="deal__title">${esc(d.title)}</div>
+    <div class="deal__desc">${esc(d.desc)}</div>
+    <div class="deal__row">
+      <div class="deal__price">${money(price)}<span>${suffix}</span></div>
+      <button class="btn btn--xs" data-act="deal" ${S.coins < (d.kind === 'pawn' ? 0 : d.price) ? 'disabled' : ''}>
+        ${d.kind === 'pawn' ? 'взять займ' : 'взять'}
+      </button>
+    </div>
+  </div>`;
+}
+
 function lotRow(lot) {
   const done = lot.done;
   const won = lot.winner === 'you';
@@ -246,14 +272,21 @@ function lotRow(lot) {
   const price = isDutch ? E.dutchPrice(lot) : lot.price;
   const top = E.bidBots(S, lot)[0];
   // Наружу — только качественная подсказка, не число. Иначе торг превращается в арифметику.
-  // «Жар зала» относительно стартовой цены: насколько выше старта готов платить лучший соперник.
-  const headroom = top.max / Math.max(1, lot.start);
-  const heatTag = headroom > 1.45 ? ['зал перегрет', 'chip--red'] : headroom > 1.12 ? ['зал торгуется', ''] : ['можно тихо', 'chip--green'];
-  const dirt = top.max / Math.max(1, lot.value);
-  const valueTag = dirt > 1.0 ? ['за него переплатят', 'chip--red'] : dirt > 0.8 ? ['в рынке', ''] : ['недооценён', 'chip--green'];
+  // Два честных сигнала:
+  // 1) «текущая цена против каталога» — насколько дорого просят прямо сейчас;
+  // 2) «жар зала» — сколько сверху придётся дать, чтобы забрать (относительно старта).
+  const askRatio = price / Math.max(1, lot.value);
+  const askTag = askRatio > 1.0 ? ['просят выше каталога', 'chip--red']
+    : askRatio > 0.88 ? ['просят по каталогу', '']
+    : askRatio > 0.72 ? ['просят ниже каталога', 'chip--green']
+    : ['просят дёшево', 'chip--green'];
+  const heat = top.max / Math.max(1, lot.start);
+  const heatTag = heat > 1.9 ? ['зал разгонится', 'chip--red']
+    : heat > 1.35 ? ['зал прибавит', '']
+    : heat > 1.1 ? ['торг лёгкий', 'chip--green']
+    : ['можно тихо', 'chip--green'];
   const freeSlots = S.maxSlots - S.stash.length;
   const room = freeSlots >= lot.relics.length;
-  const canBid = !done && S.actions > 0 && room && S.coins >= (isDutch ? price : Math.max(1, Math.round(price * 0.9)));
 
   if (done) {
     return `<div class="lot lot--dead ${won ? 'lot--won' : ''}">
@@ -270,7 +303,7 @@ function lotRow(lot) {
     </div>`;
   }
 
-  return `<div class="lot ${isDutch && dirt > 1 ? 'lot--waiting' : ''}">
+  return `<div class="lot ${isDutch && price > lot.value ? 'lot--waiting' : ''}">
     <div class="lot__thumb">
       ${relicCard(lot.relics[0], 'thumb')}
       ${lot.relics.length > 1 ? `<span class="lot__stack">+${lot.relics.length - 1}</span>` : ''}
@@ -280,18 +313,22 @@ function lotRow(lot) {
         <span class="lot__title">${lot.relics.map((r) => esc(r.name)).join(' + ')}</span>
       </div>
       <div class="lot__chips">
-        <span class="chip ${valueTag[1]}">${valueTag[0]}</span>
+        <span class="chip ${askTag[1]}">${askTag[0]}</span>
         <span class="chip ${heatTag[1]}">${heatTag[0]}</span>
       </div>
       <div class="lot__sub">ценность ≈ ${money(lot.value)} М${isDutch ? ` · цель ≤ ${money(lot.value)}` : ''}</div>
     </div>
     <div class="lot__aside">
       <div class="lot__price">${money(price)}<span class="u">М</span></div>
-      ${isDutch
-        ? `<button class="btn btn--xs btn--ghost" data-act="watch" data-lot="${lot.id}">ждать</button>
-           <button class="btn btn--xs" data-act="bid" data-lot="${lot.id}" ${canBid ? '' : 'disabled'}>взять</button>`
-        : `<button class="btn btn--xs" data-act="bid" data-lot="${lot.id}" ${canBid ? '' : 'disabled'}>ставка</button>
-           <button class="btn btn--xs btn--quiet" data-act="pass" data-lot="${lot.id}">пас</button>`}
+      ${S.actions <= 0
+        ? `<span class="lot__locked">действия<br/>кончились</span>`
+        : !room
+          ? `<span class="lot__locked">нет<br/>места</span>`
+          : isDutch
+            ? `<button class="btn btn--xs btn--ghost" data-act="watch" data-lot="${lot.id}">ждать</button>
+               <button class="btn btn--xs" data-act="bid" data-lot="${lot.id}">взять</button>`
+            : `<button class="btn btn--xs" data-act="bid" data-lot="${lot.id}">ставка</button>
+               <button class="btn btn--xs btn--quiet" data-act="pass" data-lot="${lot.id}">пас</button>`}
     </div>
   </div>`;
 }
@@ -360,7 +397,9 @@ function renderTable() {
           <div class="small dim" style="margin-top:3px">
             ${S.quota?.done
               ? `${esc(S.quota.house)} уже получил своё — премия в кассе.`
-              : `Один из домов тайно ищет вещь. Совпадёшь — заплатят сверх заказа. Угадать можно только по вкусу дома.`}
+              : S.quota?.revealed
+                ? `${esc(S.quota.house)} ищет: ${CLASSES[S.quota.class].name.toLowerCase()}, ${rarName[S.quota.rarity]}. Сдай такую вещь домой или на прилавок.`
+                : `Один из домов тайно ищет вещь и заплатит сверх заказа. Найми брокера — он знает, кто и что ищет.`}
           </div>
         </div>
         <div class="mono" style="font-size:17px;color:${S.quota?.done ? 'var(--green)' : 'var(--brass-hi)'}">
@@ -699,7 +738,7 @@ const actions = {
     const r = E.hireBroker(S);
     if (!r.ok) return toast(esc(r.why), 'bad');
     sound.coin(); buzz(12);
-    toast('Брокер нанят: прилавок платит больше.', 'good');
+    toast(r.quota && !r.quota.done ? 'Брокер нанят: он знает, что ищет город.' : 'Брокер нанят: прилавок платит больше.', 'good', 2600);
     render();
   },
 
@@ -746,6 +785,16 @@ const actions = {
   },
 
   craft() { openCraftSheet(); },
+  deal() {
+    const d = S.deal;
+    const r = E.takeDeal(S);
+    if (!r.ok) return toast(esc(r.why), 'bad');
+    buzz(16);
+    if (d.kind === 'pawn') { sound.coin(); toast(esc(r.text), 'brass', 3200); }
+    else if (r.profit >= 0) { sound.coin(); toast(`Сделка: ${esc(r.text)} — выгода ${money(r.profit)} М`, 'good', 3400); }
+    else { sound.no(); toast(`Сделка: ${esc(r.text)} — переплатил ${money(-r.profit)} М`, 'bad', 3400); }
+    render();
+  },
   emptySlots() { actions.slot(); },
 
   startDuel() {
