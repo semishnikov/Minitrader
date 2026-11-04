@@ -593,7 +593,8 @@ function renderDuelStage(d) {
       </div>
       <button class="betrow__b" data-act="betPlus">+</button>
     </div>
-    <input type="range" min="0" max="${S.coins}" step="10" value="${d.bet}" data-betrange style="--fill:${(d.bet / Math.max(1, S.coins)) * 100}%" aria-label="Ставка" />
+    <input type="range" min="0" max="${Math.max(20, Math.round(S.coins / 3))}" step="5" value="${d.bet}" data-betrange style="--fill:${(d.bet / Math.max(20, Math.round(S.coins / 3))) * 100}%" aria-label="Ставка" />
+    <div class="tiny faint" style="text-align:center;margin-top:2px">ставка — не больше трети кассы</div>
 
     <div class="duelcta">
       <button class="btn btn--quiet" data-act="leaveDuel" style="min-height:52px">уйти</button>
@@ -607,7 +608,7 @@ function renderDuelStage(d) {
   if (range) {
     range.addEventListener('input', () => {
       E.setBet(S, Number(range.value));
-      range.style.setProperty('--fill', `${(range.value / Math.max(1, S.coins)) * 100}%`);
+      range.style.setProperty('--fill', `${(range.value / Math.max(20, Math.round(S.coins / 3))) * 100}%`);
       const v = $('.betrow__v', SCREEN);
       const b = S.duel.bet;
       const winPay = b ? Math.round(b * 0.9 + 35 + S.day * 12) : 50;

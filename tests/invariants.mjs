@@ -86,6 +86,40 @@ T('все 6 дней проходятся без исключений', () => {
   for (let d=0; d<6; d++) { s.phase = 'table'; s.phase = 'duel'; s.phase = 'night'; if (d<5) E.endDay(s); }
   return s.day === 6 || 'day='+s.day;
 });
+T('финал: две ставки, третья отклоняется', () => {
+  const s = E.newGame('fin-inv'); s.coins = 1200;
+  E.startFinal(s);
+  E.buyFinalLot(s); E.buyFinalLot(s);
+  const r = E.buyFinalLot(s);
+  return !r.ok || 'третья ставка прошла';
+});
+T('финал: ставка списывает деньги и даёт силу', () => {
+  const s = E.newGame('fin-inv2'); s.coins = 1200;
+  E.startFinal(s);
+  const before = s.coins, lot = s.final.lot;
+  const r = E.buyFinalLot(s);
+  if (!r.ok) return 'не купилось';
+  return (s.coins === before - lot.price && s.final.bought.power > 0) || 'деньги или сила не сошлись';
+});
+T('перебор приёмов стоит денег', () => {
+  const s = E.newGame('trial-inv');
+  for (const l of s.market.lots) E.placeBid(s, l.id, l.limits[0].max + 80);
+  if (!s.stash.length) return 'нет стола';
+  s.coins = 500; E.startDuel(s);
+  E.chooseManeuver(s, 'feint');
+  const before = s.coins;
+  E.chooseManeuver(s, 'nest');
+  return s.coins < before || 'примерка была бесплатной';
+});
+T('ставка не превышает трети кассы', () => {
+  const s = E.newGame('bet-inv');
+  for (const l of s.market.lots) E.placeBid(s, l.id, l.limits[0].max + 80);
+  if (!s.stash.length) return 'нет стола';
+  E.startDuel(s);
+  E.setBet(s, s.coins);
+  return s.duel.bet <= Math.ceil(s.coins / 3) + 1 || 'ставка не ограничена: ' + s.duel.bet;
+});
+
 const bad = tests.filter(t => !t[1].startsWith('OK'));
 tests.forEach(([n,r]) => console.log((r.startsWith('OK')?'  ✓ ':'  ✗ ') + n + (r.startsWith('OK')?'':' → '+r)));
 console.log('\nпровалов:', bad.length, '/', tests.length);

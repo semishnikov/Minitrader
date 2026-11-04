@@ -782,7 +782,9 @@ export function startDuel(s) {
 
 export function setBet(s, bet) {
   if (!s.duel || s.duel.stage === 'result') return { ok: false };
-  s.duel.bet = clamp(Math.round(bet), 0, s.coins);
+  // Потолок — треть кассы: дуэль не должна превращаться в удвоение «всё или ничего».
+  const cap = Math.max(20, Math.round(s.coins / 3));
+  s.duel.bet = clamp(Math.round(bet), 0, Math.min(s.coins, cap));
   return { ok: true, bet: s.duel.bet };
 }
 
@@ -1262,10 +1264,19 @@ export function resolveFinal(s) {
   return { ok: true, result: s.result };
 }
 
+/**
+ * Ранги привязаны к реальному размаху очков (симулятор: медиана ~1630, p90 ~2150).
+ * Порог намеренно низкий: звание даётся за игру, а не за удачу.
+ */
 function rankFor(score, win) {
-  if (!win) return score > 2200 ? 'Перекупщик с именем' : 'Случайный человек на ярмарке';
-  if (score >= 4200) return 'Голос Ярмарки';
-  if (score >= 3200) return 'Мастер Отблесков';
-  if (score >= 2400) return 'Уважаемый торговец';
+  if (!win) {
+    if (score >= 1900) return 'Перекупщик с именем';
+    if (score >= 1500) return 'Человек с кассой';
+    return 'Случайный человек на ярмарке';
+  }
+  if (score >= 2600) return 'Голос Ярмарки';
+  if (score >= 2200) return 'Мастер Отблесков';
+  if (score >= 1750) return 'Уважаемый торговец';
+  if (score >= 1350) return 'Торговец с местом';
   return 'Удачливый новичок';
 }
