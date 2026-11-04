@@ -200,6 +200,10 @@ function renderMarket() {
   SCREEN.innerHTML = `
     <h2 class="h-title" style="margin-top:2px">${esc(styleName)}</h2>
     <p class="h-sub">${esc(styleNote)}</p>
+    ${S.market.focusCount >= 2 ? `<div class="row" style="margin-top:8px;gap:6px">
+      <span class="chip chip--brass">фокус зала · ${CLASSES[S.market.focus].name.toLowerCase()}</span>
+      <span class="tiny faint">${S.market.focusCount} из ${S.market.lots.length} лотов</span>
+    </div>` : ''}
     ${dealCard()}
 
     ${S.dayEvent ? `<div class="panel pad" style="margin-top:10px;border-color:var(--line-soft)">

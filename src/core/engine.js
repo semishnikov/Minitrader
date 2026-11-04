@@ -148,7 +148,7 @@ function pickDayEvent(rng) {
  */
 export function makeDeal(s) {
   const rng = new Rng(`${s.seed}-deal-${s.day}`);
-  if (!rng.chance(0.62)) return null;
+  if (!rng.chance(0.78)) return null;
   const kind = rng.weighted([['sealed', 40], ['bundles', 30], ['rare', 20], ['pawn', 10]]);
   const base = { kind, used: false };
   if (kind === 'sealed') {
@@ -256,6 +256,7 @@ export function makeMarket(s) {
     style,
     lots,
     focus,
+    focusCount: lots.filter((l) => l.relics.some((r) => r.class === focus)).length,
     revealed: false,
   };
   s.bots = makeBots(s);
@@ -590,19 +591,23 @@ export function craft(s, classKey, rarity) {
 
 // ---------------------------------------------------------------- ЗАКАЗЫ ДОМОВ
 
+// Каждый дом держится своего класса: это выучивается и превращается в стратегию.
 const HOUSES = [
-  { name: 'Дом Ашкрофт', desc: 'собирает янтарь для витрины' },
-  { name: 'Ложа Молочника', desc: 'любит фарфор с изъяном' },
-  { name: 'Архив Гравёра', desc: 'скупает чернила и подписи' },
-  { name: 'Клуб Верньера', desc: 'платит за латунь и стекло' },
+  { name: 'Дом Ашкрофт', class: 'amber', desc: 'янтарь для витрин — и только он' },
+  { name: 'Ложа Молочника', class: 'porcel', desc: 'фарфор с изъяном, чем кривее — тем лучше' },
+  { name: 'Архив Гравёра', class: 'ink', desc: 'чернила, письма, подписи без имён' },
+  { name: 'Клуб Верньера', class: 'brass', desc: 'латунь и механизмы' },
+  { name: 'Стеклодувы Заречья', class: 'glass', desc: 'стекло и линзы' },
+  { name: 'Склеп Безмолвия', class: 'bone', desc: 'кость, резьба, старые позвонки' },
 ];
 
 export function makeOrders(s) {
   if (!s.quota || !s.quota.house) {
     const qr = new Rng(`${s.seed}-quota`);
+    const qHouse = qr.pick(HOUSES);
     s.quota = {
-      house: qr.pick(HOUSES).name,
-      class: qr.pick(CLASS_KEYS),
+      house: qHouse.name,
+      class: qHouse.class,
       rarity: qr.weighted([['common', 30], ['fine', 40], ['rare', 25], ['fabled', 5]]),
       reward: 0,
       done: false,
@@ -615,12 +620,12 @@ export function makeOrders(s) {
   s.orders = [];
   const used = new Set();
   for (let i = 0; i < n; i++) {
-    let cls = rng.pick(CLASS_KEYS);
+    let house = rng.pick(HOUSES);
     let guard = 0;
-    while (used.has(cls) && guard++ < 8) cls = rng.pick(CLASS_KEYS);
-    used.add(cls);
+    while (used.has(house.name) && guard++ < 10) house = rng.pick(HOUSES);
+    used.add(house.name);
+    const cls = house.class;
     const rarity = rng.weighted([['common', 40], ['fine', 33], ['rare', 22], ['fabled', 5]]);
-    const house = rng.pick(HOUSES);
     const base = makeRelic(rng, { class: cls, rarity }).base;
     const reward = Math.round(base * (2.0 + rng.float(0, 0.5)) + 45 + s.day * 10);
     s.orders.push({
