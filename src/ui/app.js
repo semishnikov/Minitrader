@@ -160,6 +160,8 @@ function render(resetScroll = false) {
   if (!S) return;
   renderHUD();
   renderDock();
+  // Партия сыграна: торговать больше нечем, но итог всегда под рукой.
+  if (S.over && tab !== 'ledger') tab = 'ledger';
   const scroll = window.scrollY;
   if (tab === 'market') renderMarket();
   else if (tab === 'table') renderTable();
@@ -208,6 +210,11 @@ const TABS = [
 ];
 
 function renderDock() {
+  // Партия сыграна: остаётся только книга, остальные вкладки гасим.
+  if (S.over) {
+    DOCK.innerHTML = `<button class="dock__b on" data-act="tab" data-tab="ledger">${ICONS.ledger}<span>Итог</span></button>`;
+    return;
+  }
   // Подсказка, куда идти сейчас: текущая фаза дня подсвечена, пройденные — галочкой.
   const cur = { morning: 'morning', table: 'table', duel: 'duel', night: 'ledger', final: 'ledger' }[S.phase] || 'morning';
   const curIdx = PHASE_ORDER.indexOf(cur);
@@ -750,7 +757,11 @@ function renderLedger() {
       <button class="btn btn--ghost btn--sm grow" data-act="export">код партии</button>
       <button class="btn btn--ghost btn--sm grow" data-act="rules">свод правил</button>
     </div>
-    <div class="dayend">
+    ${S.over ? `<div class="dayend">
+      <div class="dayend__hint">Партия сыграна: ${esc(S.result?.rank || '—')} · ${money(S.result?.score || 0)} очков</div>
+      <button class="btn btn--block" data-act="showResult" style="min-height:54px">итог партии</button>
+      <button class="btn btn--ghost btn--block" data-act="newGame" style="margin-top:8px;min-height:48px">новая партия</button>
+    </div>` : `<div class="dayend">
       <div class="dayend__hint">
         ${S.duelsToday < 3 && S.phase !== 'night'
           ? `дуэлей сегодня: ${S.duelsToday} из 3`
@@ -759,7 +770,7 @@ function renderLedger() {
       ${S.day >= E.DAYS
         ? `<button class="btn btn--block" data-act="final" style="min-height:54px">Большой молоток →</button>`
         : `<button class="btn btn--block" data-act="night" style="min-height:54px">закончить день ${S.day}</button>`}
-    </div>
+    </div>`}
   `;
 }
 
@@ -903,6 +914,7 @@ const actions = {
     render();
   },
   tipSkip() { S.tutorial = false; render(); save(); },
+  showResult() { if (S.result) showResult(); },
   deal() {
     const d = S.deal;
     const r = E.takeDeal(S);
