@@ -2,3 +2,8 @@ node_modules/
 *.log
 .DS_Store
 /tmp/
+
+# Android-сборка
+android/build/
+android/otbleski.apk
+android/keystore.jks

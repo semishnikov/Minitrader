@@ -1,0 +1,83 @@
+name: APK
+
+on:
+  push:
+    branches: [arena/d9d7eabf-minitrader]
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Android SDK (build-tools + platform)
+        uses: android-actions/setup-android@v3
+
+      - name: Поставить build-tools и platform 34
+        run: |
+          sdkmanager --install "platforms;android-34" "build-tools;34.0.0" >/dev/null
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls "$ANDROID_HOME/build-tools"
+
+      - name: Собрать APK
+        run: bash android/build.sh
+
+      - name: Проверить APK
+        run: |
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          "$BT/aapt2" dump badging android/otbleski.apk | head -6
+          "$BT/apksigner" verify android/otbleski.apk && echo "подпись ок"
+
+      - name: Выложить APK в релиз
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="apk-latest"
+          gh release delete "$TAG" --yes --cleanup-tag 2>/dev/null || true
+          gh release create "$TAG" android/otbleski.apk \
+            --title "Ярмарка Отблесков — APK" \
+            --notes "Установить: скачать otbleski.apk и открыть на телефоне. Нужно разрешить установку из этого источника." \
+            --latest
+
+      - name: Положить APK в ветку gh-pages (прямая ссылка)
+        run: |
+          mkdir -p site
+          cp android/otbleski.apk site/otbleski.apk
+          cd site
+          git init -q
+          git checkout -q -b gh-pages
+          cp ../android/otbleski.apk .
+          cat > index.html <<'HTML'
+          <!doctype html><html lang="ru"><head><meta charset="utf-8">
+          <meta name="viewport" content="width=device-width,initial-scale=1">
+          <title>Ярмарка Отблесков — установка</title>
+          <style>
+            body{margin:0;background:#0b0d11;color:#ece5d7;font:16px/1.5 system-ui,sans-serif;
+                 display:grid;place-content:center;min-height:100vh;padding:24px;text-align:center}
+            h1{font-size:28px;margin:0 0 8px;color:#d9a253}
+            a{display:block;margin-top:20px;background:#d9a253;color:#241a0c;text-decoration:none;
+              padding:16px;border-radius:12px;font-weight:700}
+            small{color:#8d877a}
+          </style></head><body>
+          <h1>Ярмарка Отблесков</h1>
+          <div>Торговая игра на телефон</div>
+          <a href="otbleski.apk">Скачать APK</a>
+          <small>Открой на телефоне и разреши установку из этого источника</small>
+          </body></html>
+          HTML
+          git add -A
+          git -c user.email=actions@github -c user.name=actions commit -qm "APK $GITHUB_SHA"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" gh-pages
