@@ -1326,10 +1326,28 @@ function openRules() {
     ['Репутация', '0–100. Влияет на силу стола и цену прилавка. Падает от поражений и долгов.'],
     ['Финал', 'Сила соперника растёт от твоей репутации, кассы и дня. Конвертируй всё в силу и деньги.'],
   ];
+  // Четыре схемы — ядро игры. Показываем их с реальными числами дня.
+  const probe = E.newGame('schemes-probe');
+  const lot = probe.market.lots[0];
+  const resale = Math.max(0, Math.round(lot.value * 1.08) - Math.round(lot.price * 1.1));
+  const rowsSchemes = [
+    ['Перепродажа', `Купил дешевле каталога — продал на прилавке. Сейчас это ≈ +${resale} М с лота.`, resale > 0 ? 'good' : 'bad'],
+    ['Заказы домов', 'Дом платит 200–250% каталога за свой класс. Самая надёжная схема, но нужна вещь нужного класса.', 'good'],
+    ['Немая квота', 'Брокер раскрывает, кто и что ищет. Совпадение — деньги сверх заказа и +6 репутации.', 'brass'],
+    ['Дуэли', 'Ставка до трети кассы. Победа окупает ставку в 1.3–1.5 раза, поражение забирает ставку целиком.', 'bad'],
+  ];
   openModal(`
     <div class="eyebrow">Свод правил</div>
     <div class="modal__title">Всё, что нужно</div>
-    <div style="margin-top:12px;display:grid;gap:0">
+    <div class="bar-sep" style="margin:16px 0 2px">четыре схемы</div>
+    <div style="display:grid;gap:0">
+      ${rowsSchemes.map(([k, v, tone], i) => `<div style="padding:9px 0;border-top:${i ? '1px solid var(--line-soft)' : 'none'}">
+        <div style="font-family:var(--f-display);font-size:11px;letter-spacing:.14em;color:var(--${tone === 'good' ? 'green' : tone === 'bad' ? 'red' : 'brass'})">${esc(k.toUpperCase())}</div>
+        <div class="small dim" style="margin-top:2px">${esc(v)}</div>
+      </div>`).join('')}
+    </div>
+    <div class="bar-sep" style="margin:16px 0 2px">подробно</div>
+    <div style="display:grid;gap:0">
       ${rows.map(([k, v], i) => `<div style="padding:9px 0;border-top:${i ? '1px solid var(--line-soft)' : 'none'}">
         <div style="font-family:var(--f-display);font-size:11px;letter-spacing:.14em;color:var(--brass)">${esc(k.toUpperCase())}</div>
         <div class="small dim" style="margin-top:2px">${esc(v)}</div>
