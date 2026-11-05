@@ -141,7 +141,20 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        // Игра одностраничная: «назад» не должно выкидывать из партии случайно.
+        // Игра одностраничная: «назад» сворачивает приложение, а не выкидывает из партии.
+        // Прогресс сохраняется в localStorage на каждом действии.
         moveTaskToBack(true);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (web != null) web.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (web != null) web.onResume();
     }
 }

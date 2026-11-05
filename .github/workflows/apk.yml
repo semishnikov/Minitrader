@@ -40,8 +40,15 @@ jobs:
       - name: Проверить APK
         run: |
           BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
-          "$BT/aapt2" dump badging android/otbleski.apk | head -6
-          "$BT/apksigner" verify android/otbleski.apk && echo "подпись ок"
+          echo "--- badging ---"
+          "$BT/aapt2" dump badging android/otbleski.apk | head -8
+          echo "--- подпись ---"
+          "$BT/apksigner" verify -v android/otbleski.apk | head -8
+          echo "--- игра внутри ---"
+          unzip -l android/otbleski.apk | grep -E "assets/web/(index.html|src/ui/app.js|src/core/engine.js|assets/fonts/oswald-cyrillic-500-normal.woff2)" 
+          unzip -l android/otbleski.apk | grep -cE "assets/web/" 
+          echo "--- размер ---"
+          du -h android/otbleski.apk
 
       - name: Выложить APK в релиз
         env:

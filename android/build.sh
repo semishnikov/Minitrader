@@ -35,7 +35,7 @@ echo "== 3/6 aapt2 link (ресурсы + манифест + assets)"
   -I "$JAR" \
   --manifest "$AND/AndroidManifest.xml" \
   --min-sdk-version 21 \
-  --target-sdk-version 34 \
+  --target-sdk-version 33 \
   --version-code 1 --version-name "1.0.0" \
   -A "$ASSETS" \
   --java "$OUT/gen" \
