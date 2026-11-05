@@ -114,6 +114,7 @@ function openModal(html, opts = {}) {
   MODAL.innerHTML = `<div class="modal__scrim" data-close></div><div class="modal" role="dialog" aria-modal="true">${html}</div>`;
   MODAL.classList.add('on');
   document.body.style.overflow = 'hidden';
+  document.body.classList.add('modal-open');
   modalClose = () => closeModal();
   MODAL.querySelector('[data-close]').addEventListener('click', () => closeModal());
   if (opts.after) opts.after(MODAL.querySelector('.modal'));
@@ -122,7 +123,43 @@ function closeModal() {
   MODAL.classList.remove('on');
   MODAL.innerHTML = '';
   document.body.style.overflow = '';
+  document.body.classList.remove('modal-open');
   modalClose = null;
+}
+
+/**
+ * Шторку можно смахнуть вниз — так делают все нормальные мобильные приложения.
+ * Тянем только за верхнюю часть (ручку), чтобы не мешать скроллу содержимого.
+ */
+function setupSheetDrag() {
+  let el = null, y0 = 0, dy = 0, dragging = false;
+  const start = (e) => {
+    const sheet = e.target.closest?.('.modal');
+    if (!sheet || e.touches.length !== 1) return;
+    if (sheet.scrollTop > 2) return;
+    const r = sheet.getBoundingClientRect();
+    if (e.touches[0].clientY - r.top > 64) return; // только «шапка» шторки
+    el = sheet; y0 = e.touches[0].clientY; dy = 0; dragging = true;
+    sheet.style.transition = 'none';
+  };
+  const move = (e) => {
+    if (!dragging) return;
+    dy = Math.max(0, e.touches[0].clientY - y0);
+    el.style.transform = `translateY(${dy}px)`;
+  };
+  const end = () => {
+    if (!dragging) return;
+    dragging = false;
+    const sheet = el;
+    el = null;
+    sheet.style.transition = '';
+    sheet.style.transform = '';
+    if (dy > 96) { closeModal(); buzz(6); }
+  };
+  document.addEventListener('touchstart', start, { passive: true });
+  document.addEventListener('touchmove', move, { passive: true });
+  document.addEventListener('touchend', end, { passive: true });
+  document.addEventListener('touchcancel', end, { passive: true });
 }
 
 // ---------------------------------------------------------------- отрисовка
@@ -156,6 +193,24 @@ function tipBar() {
   </div>`;
 }
 
+/**
+ * Живая метка «начни здесь»: ставится сама на первый доступный лот, пока
+ * не закрыт первый шаг обучения. Игрок не ищет кнопку — она светится.
+ */
+function markCoach() {
+  SCREEN.querySelectorAll('.lot--hint').forEach((el) => el.classList.remove('lot--hint'));
+  SCREEN.querySelectorAll('.lot__chips .chip--pulse').forEach((el) => el.remove());
+  const tip = currentTip();
+  if (!tip || tip.id !== 'buy' || tab !== 'market') return;
+  const lot = SCREEN.querySelector('.lot:not(.lot--dead)');
+  if (!lot) return;
+  lot.classList.add('lot--hint');
+  const chips = lot.querySelector('.lot__chips');
+  if (chips && !chips.querySelector('.chip--pulse')) {
+    chips.insertAdjacentHTML('afterbegin', '<span class="chip chip--pulse">начни здесь</span>');
+  }
+}
+
 function render(resetScroll = false) {
   if (!S) return;
   renderHUD();
@@ -167,6 +222,7 @@ function render(resetScroll = false) {
   else if (tab === 'table') renderTable();
   else if (tab === 'duel') renderDuel();
   else renderLedger();
+  markCoach();
   if (resetScroll) window.scrollTo({ top: 0, behavior: 'smooth' });
   else if (scroll > 0) window.scrollTo(0, Math.min(scroll, document.body.scrollHeight));
   if (S.coins !== lastCoins) {
@@ -196,6 +252,7 @@ function renderHUD() {
     <div class="hud__row" style="margin-top:6px">
       <div class="hud__round" style="letter-spacing:.1em">${esc(phaseLabel)}${event ? ' · ' + esc(event) : ''}</div>
       <div class="grow"></div>
+      <button class="btn btn--xs btn--quiet" data-act="guide" data-guide="${currentGuide()}" style="font-size:10.5px;padding:0 8px;min-width:40px" aria-label="Как играть">?</button>
       <button class="btn btn--xs btn--quiet" data-act="help" style="font-size:10.5px;padding:0 10px">правила</button>
     </div>
     <div class="hud__bar">${Array.from({ length: S.maxActions }, (_, i) => `<i class="${i < S.actions ? 'on' : ''}"></i>`).join('')}</div>`;
@@ -489,8 +546,15 @@ function renderTable() {
     ${S.pledges.length ? `<div class="bar-sep" style="margin:18px 0 10px">Ломбард</div>
       <div class="stack">${S.pledges.map((p, i) => pledgeRow(p, i)).join('')}</div>` : ''}
 
-    <div class="row" style="margin-top:16px">
-      <button class="btn btn--block" data-act="toDuel" ${S.stash.length ? '' : 'disabled'}>К дуэлям →</button>
+    <div class="stack" style="margin-top:16px">
+      ${S.stash.length
+        ? `<button class="btn btn--block" data-act="toDuel">К дуэлям →</button>`
+        : `<button class="btn btn--block" data-act="tab" data-tab="market">
+             ${S.actions > 0 ? 'На торг — взять первую вещь' : 'День кончился — к книге'}
+           </button>
+           ${S.actions > 0
+             ? `<div class="tiny faint" style="text-align:center;margin-top:8px">стол пуст: дуэли без вещей не проводятся</div>`
+             : ''}`}
     </div>
     ${hintBox('table')}
   `;
@@ -546,10 +610,13 @@ function renderDuel() {
           <li>Ставка — твои монеты. Победа платит 155% + премия дня.</li>
         </ol>
       </div>
-      <div class="row" style="margin-top:16px">
-        <button class="btn btn--block" data-act="startDuel" ${S.duelsToday >= 3 || !S.stash.length ? 'disabled' : ''}>
-          ${S.duelsToday >= 3 ? 'на сегодня всё' : S.stash.length ? 'вызвать соперника' : 'нужен хотя бы один предмет'}
-        </button>
+      <div class="stack" style="margin-top:16px">
+        ${!S.stash.length
+          ? `<button class="btn btn--block" data-act="tab" data-tab="market">На торг — взять первую вещь</button>
+             <div class="tiny faint" style="text-align:center;margin-top:8px">дуэль — проверка стола: пустой стол бой не тянет</div>`
+          : `<button class="btn btn--block" data-act="startDuel" ${S.duelsToday >= 3 ? 'disabled' : ''}>
+               ${S.duelsToday >= 3 ? 'на сегодня всё' : 'вызвать соперника'}
+             </button>`}
       </div>
       ${S.stash.length ? `<div class="bar-sep" style="margin:20px 0 10px">Твой стол</div><div class="table-grid">${S.stash.map((r) => relicCard(r)).join('')}</div>` : ''}
       ${hintBox('duel')}
@@ -814,9 +881,205 @@ function hintBox(key) {
   return `<div class="tiny faint center" style="margin-top:18px;line-height:1.5">${esc(t)}</div>`;
 }
 
+
+// ---------------------------------------------------------------- ГАЙДЫ
+/**
+ * Экран-гайд: открывается сам при первом входе в раздел и объясняет,
+ * что тут делать и зачем. Галочка «больше не показывать» — по разделу.
+ * Возвращается кнопкой «?» в шапке всегда, даже после отказа.
+ */
+const GUIDES = {
+  start: {
+    title: 'Как играть',
+    lead: 'Шесть дней. Ты — перекупщик на ярмарке реликвий. Цель — к финалу собрать сильный стол и полную кассу.',
+    steps: [
+      ['Утро — торг', 'Три действия. Покупай лоты на аукционе дешевле каталога и сдавай их домам. Один лот — одно действие.'],
+      ['Полдень — стол', 'Вещи на столе дают силу. Три вещи одного класса — тройка, она усиливает стол на 18%.'],
+      ['Вечер — дуэли', 'До трёх боёв. Выбираешь приём, видишь его прогноз, ставишь долю кассы. Победа платит, поражение забирает ставку.'],
+      ['Ночь', 'Событие с выбором, инфляция и смена дня. Утром — новый зал.'],
+    ],
+    tip: 'Главное: покупай дешевле каталога и продавай дороже. Всё остальное — способы сделать это быстрее.',
+  },
+  market: {
+    title: 'Утро · торг',
+    lead: 'Здесь ты покупаешь вещи. У тебя 3 действия в день и касса.',
+    steps: [
+      ['Смотри на ценность', 'Под названием лота написано «ценность ≈ N М» — это его реальная цена. Если просят меньше — берёшь с выгодой.'],
+      ['Читай чипы', '«просят дёшево» — хорошая сделка. «зал прибавит» — боты поднимут цену, торопись. «можно тихо» — зал вялый, можешь взять недорого.'],
+      ['Ставь ставку', 'Жми «СТАВКА» и назови сумму. Побеждаешь — платишь свою ставку. Пас бесплатен, действие не тратит.'],
+      ['Сделка дня', 'Одна на утро, только сегодня. Иногда там настоящая находка, иногда приманка. Решай по цене против каталога.'],
+    ],
+    tip: 'Первый лот в день не тратит действие. Второй стоит 1, дальше — 2. Не разбрасывайся.',
+  },
+  table: {
+    title: 'Полдень · стол',
+    lead: 'Твой стол — это твоя сила в дуэлях и твой товар для домов.',
+    steps: [
+      ['Сила стола', 'Сумма вещей плюс бонусы: тройка одного класса +18%, все классы разные +12%, репутация добавляет до +20%.'],
+      ['Заказы домов', 'Дом платит 200–250% каталога за вещь своего класса и редкости. Это выгоднее прилавка — ищи нужную вещь на торге.'],
+      ['Немая квота', 'Один дом тайно ищет вещь. Найми брокера — он раскроет, кто и что. Совпадение даёт премию сверх заказа.'],
+      ['Продажа и ломбард', 'Лишнее сбывай на прилавке. Нужное, но не сейчас — в ломбард под залог, потом выкупишь.'],
+    ],
+    tip: 'Слоты кончаются — покупай новые или продавай рядовые вещи. Тройка важнее пяти случайных.',
+  },
+  duel: {
+    title: 'Вечер · дуэли',
+    lead: 'Дуэль — это не бросок кубика. Ты видишь расклад и выбираешь приём.',
+    steps: [
+      ['Сравни силу', 'Слева твоя сила, справа коридор соперника. Пока он не изучен — виден диапазон, а не точное число.'],
+      ['Выбери приём', 'У каждого приёма есть прогноз: «+35» значит выигрываешь с запасом, «−9» — не дотягиваешь. «Дознание» раскрывает козырь соперника.'],
+      ['Поставь ставку', 'Ставка — доля кассы, не больше трети. Победа окупает её с лихвой, поражение забирает целиком.'],
+      ['После боя', 'Смотри разбор: из чего сложилась сила. Это подсказка, что менять на столе.'],
+    ],
+    tip: 'Плохой расклад — можно уйти из боя и не рисковать кассой. Это не трусость, это расчёт.',
+  },
+  final: {
+    title: 'Финал · большой молоток',
+    lead: 'Последний торг: три лота, но ставок всего две. Трать с умом.',
+    steps: [
+      ['Молоток', 'Добавляет силу к твоему столу. Берёшь, если силы не хватает до собрания.'],
+      ['Слово старшины', 'Даёт репутацию, а она тоже усиливает стол и цену прилавка.'],
+      ['Тихая касса', 'Прячет деньги: они пойдут в итоговые очки, но не в силу. Иногда лучше просто сохранить кассу.'],
+    ],
+    tip: 'Очки = касса + репутация×8 + сила стола×2. Победа в финале добавляет 700 — но и без неё можно взять высокое звание.',
+  },
+};
+
+function guideSeen(id) { return !!(S && S.guides && S.guides[id]); }
+
+/** Какой гайд уместен прямо сейчас — для кнопки «?». */
+function currentGuide() {
+  if (!S) return 'start';
+  if (S.over || S.phase === 'final' || S.final) return 'final';
+  if (tab === 'table') return 'table';
+  if (tab === 'duel') return 'duel';
+  return 'market';
+}
+
+/** Показать гайд, если он ещё не отмечен как понятый. */
+function showGuideOnce(id) {
+  if (!S || guideSeen(id)) return false;
+  if (MODAL.classList.contains('on')) return false;
+  openGuide(id, true);
+  return true;
+}
+
+function openGuide(id, firstTime = false) {
+  const g = GUIDES[id];
+  if (!g) return;
+  openModal(`
+    <div class="guide">
+      <div class="guide__eyebrow">${firstTime ? 'Первое знакомство' : 'Подсказка'}</div>
+      <h2 class="guide__title">${esc(g.title)}</h2>
+      <p class="guide__lead">${esc(g.lead)}</p>
+      <ol class="guide__steps">
+        ${g.steps.map(([h, t], i) => `<li>
+          <span class="guide__n">${i + 1}</span>
+          <span class="guide__body">
+            <span class="guide__h">${esc(h)}</span>
+            <span class="guide__t">${esc(t)}</span>
+          </span>
+        </li>`).join('')}
+      </ol>
+      <div class="guide__tip"><b>Совет.</b> ${esc(g.tip)}</div>
+      <div class="guide__foot">
+        <label class="guide__check">
+          <input type="checkbox" data-guide-mute="1" ${firstTime ? 'checked' : ''} />
+          <span>Больше не показывать этот гайд</span>
+        </label>
+        <button class="btn btn--block" data-act="guideOk" data-guide="${id}" style="margin-top:10px;min-height:52px">понятно, играем</button>
+        ${firstTime ? '' : `<button class="btn btn--ghost btn--block" data-act="guideRules" style="margin-top:8px;min-height:48px">весь свод правил</button>`}
+      </div>
+    </div>
+  `, { after: () => {
+    MODAL.querySelector('[data-act=guideOk]').onclick = () => {
+      const mute = MODAL.querySelector('[data-guide-mute]')?.checked;
+      if (mute) { S.guides = S.guides || {}; S.guides[id] = true; }
+      closeModal();
+      save();
+    };
+    const r = MODAL.querySelector('[data-act=guideRules]');
+    if (r) r.onclick = () => { closeModal(); openRules(); };
+  } });
+}
+
+
+// ---------------------------------------------------------------- свайпы
+/**
+ * Свайп влево-вправо переключает вкладки — базовый жест на телефоне.
+ * Срабатывает только на горизонтальном движении, чтобы не мешать
+ * вертикальному скроллу и ползункам.
+ */
+const TABS_ORDER = ['market', 'table', 'duel', 'ledger'];
+
+/**
+ * Экран едет в сторону движения, а не просто «мигает» — палец и картинка
+ * говорят одно и то же. Класс снимается сразу: анимация одноразовая.
+ */
+function tabShift(from, to) {
+  if (!from || !to || from === to) return;
+  const a = TABS_ORDER.indexOf(from);
+  const b = TABS_ORDER.indexOf(to);
+  if (a < 0 || b < 0) return;
+  SCREEN.classList.remove('tab-next', 'tab-prev');
+  void SCREEN.offsetWidth;
+  SCREEN.classList.add(b > a ? 'tab-next' : 'tab-prev');
+  setTimeout(() => SCREEN.classList.remove('tab-next', 'tab-prev'), 320);
+}
+
+function setupSwipe() {
+  let x0 = 0, y0 = 0, t0 = 0, tracking = false;
+
+  const start = (e) => {
+    if (e.touches.length !== 1) return;
+    const t = e.target;
+    // Не мешаем ползункам, шторкам и горизонтальным спискам
+    if (t.closest('input, .modal, .betrow, [data-noswipe], .mangrid')) return;
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = Date.now();
+    tracking = true;
+  };
+
+  const end = (e) => {
+    if (!tracking) return;
+    tracking = false;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - x0;
+    const dy = t.clientY - y0;
+    const dt = Date.now() - t0;
+    // Горизонтальный, быстрый и достаточно длинный жест
+    if (Math.abs(dx) < 64 || Math.abs(dx) < Math.abs(dy) * 1.6 || dt > 700) return;
+    if (MODAL.classList.contains('on')) return;
+    const i = TABS_ORDER.indexOf(tab);
+    if (i < 0) return;
+    const next = dx < 0 ? i + 1 : i - 1;
+    if (next < 0 || next >= TABS_ORDER.length) return;
+    const from = tab;
+    tab = TABS_ORDER[next];
+    buzz(8);
+    tabShift(from, tab);
+    render(true);
+    save();
+    if (tab === 'market' || tab === 'table' || tab === 'duel') {
+      setTimeout(() => showGuideOnce(tab), 140);
+    }
+  };
+
+  document.addEventListener('touchstart', start, { passive: true });
+  document.addEventListener('touchend', end, { passive: true });
+}
+
 // ---------------------------------------------------------------- действия
 const actions = {
-  tab(el) { tab = el.dataset.tab; render(true); buzz(6); save(); },
+  tab(el) {
+    const from = tab;
+    tab = el.dataset.tab;
+    tabShift(from, tab);
+    render(true); buzz(6); save();
+    // Первый заход в раздел — знакомим, а не бросаем в пустой экран.
+    if (tab === 'market' || tab === 'table' || tab === 'duel') {
+      setTimeout(() => showGuideOnce(tab), 120);
+    }
+  },
 
   toTable() { tab = 'table'; S.phase = S.phase === 'morning' ? 'table' : S.phase; render(); buzz(8); },
   toDuel() { tab = 'duel'; S.phase = S.phase === 'table' ? 'duel' : S.phase; render(); buzz(8); },
@@ -914,6 +1177,13 @@ const actions = {
     render();
   },
   tipSkip() { S.tutorial = false; render(); save(); },
+  guideOk(el) {
+    const mute = MODAL.querySelector('[data-guide-mute]')?.checked;
+    if (mute) { S.guides = S.guides || {}; S.guides[el.dataset.guide] = true; }
+    closeModal(); save();
+  },
+  guideRules() { closeModal(); openRules(); },
+  guide(el) { openGuide(el.dataset.guide || currentGuide()); },
   showResult() { if (S.result) showResult(); },
   deal() {
     const d = S.deal;
@@ -1406,13 +1676,20 @@ function splash() {
   sp.addEventListener('click', (e) => {
     const el = e.target.closest('[data-act]');
     if (!el) return;
-    if (el.dataset.act === 'begin') { sp.remove(); newRun(); setTimeout(() => { if (!meta().seenRules) openRules(); }, 350); setMeta({ seenRules: true }); }
+    if (el.dataset.act === 'begin') {
+      sp.remove();
+      newRun();
+      // Новичку — короткий гайд «как играть», а не простыня правил.
+      setTimeout(() => { if (!meta().seenGuide) { openGuide('start', true); setMeta({ seenGuide: true }); } }, 380);
+    }
     if (el.dataset.act === 'rules') openRules();
   });
 }
 
 function boot() {
   onAction(document, actions);
+  setupSwipe();
+  setupSheetDrag();
   onAction(MODAL, { bidCancel: closeModal, closeModalBtn: closeModal });
   const saved = load();
   if (saved && saved.day) {

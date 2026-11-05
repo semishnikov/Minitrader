@@ -6,7 +6,7 @@
 @font-face {
   font-family: 'Oswald';
   font-style: normal;
-  font-weight: 500;
+  font-weight: 600;
   font-display: swap;
   src: url('../../assets/fonts/oswald-cyrillic-500-normal.woff2') format('woff2');
   unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
@@ -14,7 +14,7 @@
 @font-face {
   font-family: 'Oswald';
   font-style: normal;
-  font-weight: 500;
+  font-weight: 600;
   font-display: swap;
   src: url('../../assets/fonts/oswald-latin-500-normal.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
@@ -22,7 +22,7 @@
 @font-face {
   font-family: 'Oswald';
   font-style: normal;
-  font-weight: 600;
+  font-weight: 700;
   font-display: swap;
   src: url('../../assets/fonts/oswald-cyrillic-600-normal.woff2') format('woff2');
   unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
@@ -30,7 +30,7 @@
 @font-face {
   font-family: 'Oswald';
   font-style: normal;
-  font-weight: 600;
+  font-weight: 700;
   font-display: swap;
   src: url('../../assets/fonts/oswald-latin-600-normal.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
@@ -38,7 +38,7 @@
 @font-face {
   font-family: 'Cormorant';
   font-style: normal;
-  font-weight: 600;
+  font-weight: 700;
   font-display: swap;
   src: url('../../assets/fonts/cormorant-garamond-cyrillic-600-normal.woff2') format('woff2');
   unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
@@ -46,9 +46,73 @@
 @font-face {
   font-family: 'Cormorant';
   font-style: normal;
-  font-weight: 600;
+  font-weight: 700;
   font-display: swap;
   src: url('../../assets/fonts/cormorant-garamond-latin-600-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../../assets/fonts/oswald-cyrillic-700-normal.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../../assets/fonts/oswald-latin-700-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Golos';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../../assets/fonts/golos-text-cyrillic-600-normal.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Golos';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../../assets/fonts/golos-text-latin-600-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Golos';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../../assets/fonts/golos-text-cyrillic-700-normal.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Golos';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../../assets/fonts/golos-text-latin-700-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Cormorant';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../../assets/fonts/cormorant-garamond-cyrillic-700-normal.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Cormorant';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../../assets/fonts/cormorant-garamond-latin-700-normal.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 @font-face {
@@ -70,7 +134,7 @@
 @font-face {
   font-family: 'Golos';
   font-style: normal;
-  font-weight: 500;
+  font-weight: 600;
   font-display: swap;
   src: url('../../assets/fonts/golos-text-cyrillic-500-normal.woff2') format('woff2');
   unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
@@ -78,7 +142,7 @@
 @font-face {
   font-family: 'Golos';
   font-style: normal;
-  font-weight: 500;
+  font-weight: 600;
   font-display: swap;
   src: url('../../assets/fonts/golos-text-latin-500-normal.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
@@ -90,8 +154,8 @@
   --panel: #171b22;
   --panel-2: #1d222b;
   --ink: #ece5d7;
-  --ink-dim: #9a958a;
-  --ink-faint: #6a6a66;
+  --ink-dim: #b3aca0;
+  --ink-faint: #8b8078;
   --brass: #d9a253;
   --brass-hi: #ffd08a;
   --brass-lo: #8a5f2b;
@@ -124,11 +188,15 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--f-body);
-  font-size: 15px;
+  font-size: 15.5px;
+  font-weight: 600;
   line-height: 1.45;
+  letter-spacing: 0.002em;
   overscroll-behavior: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
 }
 button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; border: 0; background: none; }
@@ -189,14 +257,14 @@ h1, h2, h3, h4, p { margin: 0; }
   text-transform: uppercase;
   white-space: nowrap;
 }
-.hud__round b { color: var(--brass); font-weight: 600; }
+.hud__round b { color: var(--brass); font-weight: 700; }
 .hud__coins {
   margin-left: auto;
   display: flex;
   align-items: baseline;
   gap: 6px;
   font-family: var(--f-num);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 26px;
   letter-spacing: 0.01em;
   font-variant-numeric: tabular-nums;
@@ -241,21 +309,21 @@ h1, h2, h3, h4, p { margin: 0; }
 
 .eyebrow {
   font-family: var(--f-display);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.2em;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--brass);
 }
 .h-title {
   font-family: var(--f-serif);
-  font-weight: 600;
-  font-size: 30px;
-  line-height: 1.05;
-  letter-spacing: -0.01em;
-  margin: 6px 0 2px;
+  font-weight: 700;
+  font-size: 31px;
+  line-height: 1.04;
+  letter-spacing: -0.012em;
+  margin: 6px 0 3px;
 }
-.h-sub { color: var(--ink-dim); font-size: 13.5px; }
+.h-sub { color: var(--ink-dim); font-size: 14px; font-weight: 600; }
 .rule { height: 1px; background: linear-gradient(90deg, var(--line), transparent); margin: 14px 0; border: 0; }
 
 /* ---------- Панели ---------- */
@@ -274,8 +342,9 @@ h1, h2, h3, h4, p { margin: 0; }
 .mono { font-family: var(--f-num); font-variant-numeric: tabular-nums; }
 .dim { color: var(--ink-dim); }
 .faint { color: var(--ink-faint); }
-.small { font-size: 12.5px; }
-.tiny { font-size: 11px; }
+.small { font-size: 13px; font-weight: 600; }
+.tiny { font-size: 11.5px; font-weight: 600; }
+b, strong { font-weight: 700; }
 .center { text-align: center; }
 .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -290,7 +359,7 @@ h1, h2, h3, h4, p { margin: 0; }
   padding: 0 18px;
   border-radius: 12px;
   font-family: var(--f-display);
-  font-weight: 500;
+  font-weight: 600;
   font-size: 15px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -349,7 +418,7 @@ h1, h2, h3, h4, p { margin: 0; }
   border-radius: 12px;
   color: var(--ink-faint);
   font-size: 10.5px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.02em;
   transition: color 0.18s, background 0.18s;
 }
@@ -435,7 +504,7 @@ h1, h2, h3, h4, p { margin: 0; }
 .relic__meta { display: grid; gap: 2px; text-align: left; z-index: 3; min-width: 0; }
 .relic__name {
   font-family: var(--f-serif);
-  font-weight: 600;
+  font-weight: 700;
   /* Кегль подстраивается под ширину карточки: длинные названия не рвутся по буквам. */
   font-size: clamp(10px, 3.4cqw, 12.5px);
   line-height: 1.06;
@@ -509,7 +578,7 @@ h1, h2, h3, h4, p { margin: 0; }
 .chip--green { color: #a8d69a; border-color: rgba(121, 180, 106, 0.35); background: rgba(121, 180, 106, 0.1); }
 
 .kv { display: grid; grid-template-columns: 1fr auto; gap: 8px; font-size: 13px; }
-.kv b { font-family: var(--f-num); font-weight: 600; font-variant-numeric: tabular-nums; }
+.kv b { font-family: var(--f-num); font-weight: 700; font-variant-numeric: tabular-nums; }
 
 /* ---------- Лоты аукциона ---------- */
 .lot {
@@ -531,7 +600,7 @@ h1, h2, h3, h4, p { margin: 0; }
 .lot__stack {
   position: absolute; right: -5px; bottom: -4px;
   background: var(--brass); color: #17120a;
-  font-family: var(--f-num); font-size: 9.5px; font-weight: 600;
+  font-family: var(--f-num); font-size: 9.5px; font-weight: 700;
   border-radius: 999px; padding: 1px 5px; line-height: 1.3;
   box-shadow: 0 2px 6px rgba(0,0,0,.5);
 }
@@ -550,7 +619,7 @@ h1, h2, h3, h4, p { margin: 0; }
 .lot__sub2 span + span::before { content: '· '; color: var(--ink-faint); opacity: .5; }
 .lot__aside { display: grid; gap: 5px; justify-items: end; flex: 0 0 auto; }
 .lot__price {
-  font-family: var(--f-num); font-size: 18px; font-weight: 600;
+  font-family: var(--f-num); font-size: 18px; font-weight: 700;
   font-variant-numeric: tabular-nums; letter-spacing: -.01em; line-height: 1.1;
   color: var(--ink);
 }
@@ -612,8 +681,8 @@ input[type='range']::-moz-range-thumb {
   display: grid; place-items: center;
 }
 .stepper__b:active { background: rgba(217, 162, 83, 0.14); }
-.stepper__v { text-align: center; font-family: var(--f-num); font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.stepper__v small { display: block; font-family: var(--f-body); font-size: 11px; color: var(--ink-faint); font-weight: 400; margin-top: -2px; }
+.stepper__v { text-align: center; font-family: var(--f-num); font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stepper__v small { display: block; font-family: var(--f-body); font-size: 11.5px; color: var(--ink-faint); font-weight: 600; margin-top: -2px; }
 
 /* ---------- Прогресс / шкалы силы ---------- */
 .meter { height: 6px; border-radius: 3px; background: #23272f; overflow: hidden; }
@@ -623,7 +692,7 @@ input[type='range']::-moz-range-thumb {
 
 .duelbar { display: grid; gap: 8px; }
 .duelbar__l { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-dim); }
-.duelbar__v { font-family: var(--f-num); font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.duelbar__v { font-family: var(--f-num); font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .duelbar__v.me { color: var(--brass-hi); }
 .duelbar__v.them { color: #f19aa8; }
 
@@ -655,7 +724,7 @@ input[type='range']::-moz-range-thumb {
   content: ''; position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
   width: 36px; height: 4px; border-radius: 2px; background: rgba(236, 229, 215, 0.16);
 }
-.modal__title { font-family: var(--f-serif); font-size: 24px; font-weight: 600; margin: 8px 0 4px; }
+.modal__title { font-family: var(--f-serif); font-size: 24px; font-weight: 700; margin: 8px 0 4px; }
 @keyframes sheet { from { transform: translateY(100%); } to { transform: none; } }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 
@@ -731,7 +800,7 @@ input[type='range']::-moz-range-thumb {
   z-index: 110;
   font-family: var(--f-num);
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 700;
   pointer-events: none;
   animation: floatUp 0.95s var(--ease) both;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
@@ -794,7 +863,7 @@ input[type='range']::-moz-range-thumb {
 }
 .splash__in { display: grid; gap: 18px; justify-items: center; text-align: center; max-width: 380px; animation: screenIn 0.7s var(--ease) both; }
 .splash h1 {
-  font-family: var(--f-serif); font-weight: 600; font-size: 40px; line-height: 0.98;
+  font-family: var(--f-serif); font-weight: 700; font-size: 40px; line-height: 0.98;
   letter-spacing: -0.02em;
   background: linear-gradient(180deg, #fff3da, var(--brass) 70%, #8a5f2b);
   -webkit-background-clip: text; background-clip: text; color: transparent;
@@ -936,12 +1005,12 @@ input[type='range']:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px 
 .duelcard__side { display: grid; gap: 2px; }
 .duelcard__side--r { justify-items: end; text-align: right; }
 .duelcard__lbl { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); font-family: var(--f-display); white-space: nowrap; }
-.duelcard__num { font-family: var(--f-num); font-size: 30px; line-height: 1; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.duelcard__num { font-family: var(--f-num); font-size: 30px; line-height: 1; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
 .duelcard__num.me { color: var(--brass-hi); }
 .duelcard__num.them { color: #ef8e9c; }
 .duelcard__mid { display: grid; justify-items: center; gap: 3px; padding-bottom: 3px; }
 .duelcard__vs { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-faint); font-family: var(--f-display); }
-.duelcard__diff { font-family: var(--f-num); font-size: 13px; font-weight: 600; white-space: nowrap; }
+.duelcard__diff { font-family: var(--f-num); font-size: 13px; font-weight: 700; white-space: nowrap; }
 .duelcard__bars { grid-column: 1 / -1; display: grid; gap: 4px; margin-top: 6px; }
 .duelcard__track { height: 5px; border-radius: 3px; background: #23272f; overflow: hidden; position: relative; }
 .duelcard__track i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--brass-lo), var(--brass-hi)); transition: width .45s var(--ease); }
@@ -978,7 +1047,7 @@ input[type='range']:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px 
 /* Прогноз приёма: крупная цифра справа, ниже названия — чтобы не перекрывать его */
 .man__forecast {
   font-family: var(--f-num);
-  font-size: 19px; font-weight: 600; line-height: 1;
+  font-size: 19px; font-weight: 700; line-height: 1;
   font-variant-numeric: tabular-nums;
   margin-top: 1px; margin-bottom: 1px;
 }
@@ -1004,7 +1073,7 @@ input[type='range']:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px 
 }
 .betrow__b:active { background: rgba(217,162,83,.14); }
 .betrow__v { text-align: center; display: grid; gap: 1px; }
-.betrow__v b { font-family: var(--f-num); font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1; }
+.betrow__v b { font-family: var(--f-num); font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
 .betrow__v small { font-size: 10.5px; color: var(--ink-faint); }
 .metatag {
   position: absolute; left: 4px; top: 4px;
@@ -1111,16 +1180,16 @@ input[type='range']:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px 
   text-transform: uppercase; color: var(--brass);
 }
 .deal__title {
-  font-family: var(--f-serif); font-size: 18px; font-weight: 600;
+  font-family: var(--f-serif); font-size: 18px; font-weight: 700;
   margin-top: 3px; color: var(--ink); line-height: 1.1;
 }
 .deal__desc { font-size: 12px; line-height: 1.4; color: var(--ink-dim); margin-top: 5px; }
 .deal__row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; }
 .deal__price {
-  font-family: var(--f-num); font-size: 22px; font-weight: 600;
+  font-family: var(--f-num); font-size: 22px; font-weight: 700;
   font-variant-numeric: tabular-nums; color: var(--brass-hi);
 }
-.deal__price span { font-size: 11px; color: var(--ink-faint); margin-left: 3px; font-family: var(--f-body); font-weight: 400; }
+.deal__price span { font-size: 11.5px; color: var(--ink-faint); margin-left: 3px; font-family: var(--f-body); font-weight: 600; }
 
 /* Характер вещи: латунная метка в углу гравюры */
 .relic__trait {
@@ -1148,7 +1217,7 @@ input[type='range']:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px 
     linear-gradient(180deg, #191d24, #14171d);
 }
 .final-lot__title {
-  font-family: var(--f-serif); font-size: 19px; font-weight: 600;
+  font-family: var(--f-serif); font-size: 19px; font-weight: 700;
   margin-top: 3px; line-height: 1.15; color: var(--ink);
 }
 .final-lot__desc { font-size: 12px; line-height: 1.4; color: var(--ink-dim); margin-top: 5px; }
@@ -1170,7 +1239,7 @@ input[type='range']:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px 
 }
 @keyframes tipIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 .tipbar__n {
-  font-family: var(--f-num); font-size: 10px; font-weight: 600;
+  font-family: var(--f-num); font-size: 10px; font-weight: 700;
   color: #241a0c; background: var(--brass);
   border-radius: 5px; padding: 2px 5px; flex: 0 0 auto; margin-top: 1px;
 }
@@ -1196,7 +1265,7 @@ input[type='range']:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px 
 }
 @keyframes bootSpin { to { transform: rotate(360deg); } }
 .boot__name {
-  font-family: var(--f-serif); font-size: 24px; font-weight: 600;
+  font-family: var(--f-serif); font-size: 24px; font-weight: 700;
   background: linear-gradient(180deg, #fff3da, var(--brass) 70%, #8a5f2b);
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
@@ -1205,3 +1274,259 @@ input[type='range']:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px 
   text-transform: uppercase; color: var(--ink-faint);
 }
 @media (prefers-reduced-motion: reduce) { .boot__seal { animation: none; } }
+
+/* ============================================================
+   ГАЙДЫ — экран-знакомство
+   ============================================================ */
+.guide { padding-bottom: 2px; }
+.guide__eyebrow {
+  font-family: var(--f-display);
+  font-size: 11px; font-weight: 700;
+  letter-spacing: .2em; text-transform: uppercase;
+  color: var(--brass);
+}
+.guide__title {
+  font-family: var(--f-serif);
+  font-size: 30px; font-weight: 700;
+  line-height: 1.02; letter-spacing: -.015em;
+  margin: 5px 0 8px;
+  color: var(--ink);
+}
+.guide__lead {
+  font-size: 15px; font-weight: 600;
+  line-height: 1.45;
+  color: var(--ink-dim);
+  margin-bottom: 16px;
+}
+.guide__steps {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; gap: 13px;
+}
+.guide__steps li {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 11px;
+  align-items: start;
+  /* Появление лесенкой — взгляд идёт сверху вниз, как читают */
+  animation: guideStep .38s var(--ease) both;
+}
+.guide__steps li:nth-child(1) { animation-delay: .04s; }
+.guide__steps li:nth-child(2) { animation-delay: .10s; }
+.guide__steps li:nth-child(3) { animation-delay: .16s; }
+.guide__steps li:nth-child(4) { animation-delay: .22s; }
+@keyframes guideStep {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: none; }
+}
+.guide__n {
+  display: grid; place-items: center;
+  width: 30px; height: 30px; border-radius: 9px;
+  font-family: var(--f-num); font-size: 14px; font-weight: 700;
+  color: #241a0c;
+  background: linear-gradient(180deg, var(--brass-hi), var(--brass));
+  box-shadow: 0 3px 10px rgba(217,162,83,.28), inset 0 1px 0 rgba(255,255,255,.35);
+}
+.guide__body { display: grid; gap: 2px; min-width: 0; }
+.guide__h {
+  font-family: var(--f-display);
+  font-size: 13.5px; font-weight: 700;
+  letter-spacing: .05em; text-transform: uppercase;
+  color: var(--ink);
+}
+.guide__t { font-size: 14px; font-weight: 600; line-height: 1.42; color: var(--ink-dim); }
+
+.guide__tip {
+  margin-top: 16px;
+  padding: 11px 13px;
+  border-radius: 11px;
+  border-left: 3px solid var(--brass);
+  background: rgba(217,162,83,.08);
+  font-size: 13.5px; font-weight: 600; line-height: 1.45;
+  color: var(--ink-dim);
+}
+.guide__tip b { color: var(--brass-hi); font-weight: 700; }
+
+.guide__check {
+  display: flex; align-items: center; gap: 11px;
+  margin-top: 16px; padding: 11px 12px;
+  min-height: 48px;
+  border-radius: 11px;
+  border: 1px solid var(--line-soft);
+  cursor: pointer;
+  transition: border-color .16s;
+}
+.guide__check:active { border-color: var(--line); }
+.guide__check input {
+  appearance: none; -webkit-appearance: none;
+  width: 22px; height: 22px; flex: 0 0 auto;
+  border-radius: 6px;
+  border: 2px solid var(--ink-faint);
+  background: transparent;
+  display: grid; place-items: center;
+  transition: background .16s, border-color .16s;
+}
+.guide__check input:checked {
+  background: var(--brass);
+  border-color: var(--brass);
+}
+.guide__check input:checked::after {
+  content: '';
+  width: 5px; height: 10px;
+  border: solid #241a0c;
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg) translate(-1px, -1px);
+}
+.guide__check span { font-size: 13px; font-weight: 600; color: var(--ink-dim); }
+
+/* ============================================================
+   МОБИЛЬНАЯ ПЛАВНОСТЬ И ОТКЛИК
+   ============================================================ */
+
+/* Нативный скролл с инерцией + никаких «резинок» страницы */
+html {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+body { touch-action: pan-y; }
+
+/* Кнопки и карточки: пружинящее нажатие вместо мгновенной смены цвета */
+.btn, .dock__b, .man, .lot, .list__row, .tab, .relic, .deal, .panel {
+  transition:
+    transform .14s var(--snap),
+    background-color .18s var(--ease),
+    border-color .18s var(--ease),
+    box-shadow .18s var(--ease),
+    color .18s var(--ease);
+}
+.btn:active { transform: scale(.965); }
+.btn:disabled { transform: none; }
+
+/* Каждый элемент ленты появляется волной — экран «оживает» при входе */
+.stack > *, .screen > .panel, .lot {
+  animation: riseIn .34s var(--ease) both;
+}
+.lot:nth-child(2) { animation-delay: .035s; }
+.lot:nth-child(3) { animation-delay: .07s; }
+.lot:nth-child(4) { animation-delay: .105s; }
+.lot:nth-child(5) { animation-delay: .14s; }
+.lot:nth-child(6) { animation-delay: .175s; }
+
+/* Переключение вкладки: лёгкий сдвиг в сторону движения */
+.screen.tab-next { animation: tabNext .26s var(--ease) both; }
+.screen.tab-prev { animation: tabPrev .26s var(--ease) both; }
+@keyframes tabNext {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes tabPrev {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Деньги: вспышка при изменении */
+.hud__coins.up #coinval { animation: coinUp .42s var(--snap); }
+.hud__coins.down #coinval { animation: coinDown .42s var(--snap); }
+@keyframes coinUp {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.13); color: var(--green); }
+  100% { transform: scale(1); }
+}
+@keyframes coinDown {
+  0% { transform: scale(1); }
+  35% { transform: scale(.93); color: var(--red); }
+  100% { transform: scale(1); }
+}
+
+/* Скроллбар: тонкий, не отвлекает, но виден */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-thumb { background: rgba(217,162,83,.28); border-radius: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* Шторки: карточки внутри выезжают каскадом */
+.modal > * { animation: sheetItem .34s var(--ease) both; }
+.modal > *:nth-child(2) { animation-delay: .04s; }
+.modal > *:nth-child(3) { animation-delay: .08s; }
+.modal > *:nth-child(4) { animation-delay: .12s; }
+@keyframes sheetItem {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Ползунок ставки: крупный, удобный для пальца */
+input[type=range] {
+  -webkit-appearance: none; appearance: none;
+  height: 34px; background: transparent; touch-action: pan-y;
+}
+input[type=range]::-webkit-slider-runnable-track {
+  height: 6px; border-radius: 999px;
+  background: linear-gradient(90deg, var(--brass) var(--fill, 0%), rgba(236,229,215,.13) var(--fill, 0%));
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 26px; height: 26px; border-radius: 50%;
+  margin-top: -10px;
+  background: linear-gradient(180deg, var(--brass-hi), var(--brass));
+  border: 2px solid #1a1206;
+  box-shadow: 0 3px 12px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.4);
+  transition: transform .12s var(--snap);
+}
+input[type=range]:active::-webkit-slider-thumb { transform: scale(1.14); }
+
+/* Уважаем «меньше движения» — но интерфейс остаётся отзывчивым */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Коуч-метка на первом лоте: дышит, пока игрок не сделал первый шаг */
+.chip--pulse {
+  border-color: var(--brass-hi) !important;
+  color: #241a0c !important;
+  background: linear-gradient(180deg, var(--brass-hi), var(--brass)) !important;
+  font-weight: 700;
+  animation: chipPulse 1.5s ease-in-out infinite;
+}
+@keyframes chipPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(217,162,83,.45); transform: scale(1); }
+  50% { box-shadow: 0 0 0 6px rgba(217,162,83,0); transform: scale(1.045); }
+}
+.lot--hint {
+  border-color: rgba(217,162,83,.55);
+  box-shadow: 0 0 0 1px rgba(217,162,83,.18), 0 10px 26px rgba(0,0,0,.34);
+  animation: hintBreath 2.4s ease-in-out infinite;
+}
+@keyframes hintBreath {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(217,162,83,.16), 0 10px 26px rgba(0,0,0,.34); }
+  50% { box-shadow: 0 0 0 3px rgba(217,162,83,.26), 0 12px 30px rgba(0,0,0,.42); }
+}
+/* Пока открыта шторка, всплывашки уходят наверх — не закрывают кнопки */
+body.modal-open .toast-layer { bottom: auto; top: calc(env(safe-area-inset-top, 0px) + 14px); }
+body.modal-open .toast { animation: toastDrop .26s var(--snap) both; }
+@keyframes toastDrop {
+  from { opacity: 0; transform: translateY(-10px) scale(.97); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Гайд: липкий низ. Кнопка «понятно» видна всегда, даже если текст длинный —
+   на маленьком экране не приходится догадываться, что там ниже. */
+.guide { display: contents; }
+.guide__foot {
+  position: sticky;
+  bottom: calc(-1 * (20px + var(--safe-b)));
+  margin: 10px calc(-1 * var(--pad)) calc(-1 * (20px + var(--safe-b)));
+  padding: 10px var(--pad) calc(14px + var(--safe-b));
+  background: #12151b;
+  border-top: 1px solid rgba(236,229,215,.09);
+  box-shadow: 0 -10px 24px rgba(9,11,15,.55);
+  z-index: 2;
+}
+.guide__foot .guide__check {
+  margin-top: 0;
+  min-height: 44px;
+  background: rgba(236,229,215,.03);
+  border-color: rgba(236,229,215,.1);
+}

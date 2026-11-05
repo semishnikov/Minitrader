@@ -126,6 +126,7 @@ export function newGame(seed = 'fairs-' + Date.now()) {
     over: false,
     result: null,
     tutorial: true,
+    guides: {},           // какие гайды игрок уже понял: { market: true, ... }
     // «Немая квота»: три скрытых желания домов — их не видно, но их можно нащупать.
     quota: { house: null, class: null, rarity: null, done: false },
     auctionSeq: 0,
