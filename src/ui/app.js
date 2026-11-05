@@ -646,6 +646,19 @@ function renderDuelStage(d) {
     S.duel.maneuver = snap;
     return q;
   };
+  const manKeys = Object.keys(E.MANEUVERS);
+  // Лучший доступный приём: по запасу над худшим раскладом соперника.
+  const bestKey = manKeys.reduce((best, k) => (forecast(k).diffLow > forecast(best).diffLow ? k : best), manKeys[0]);
+  const hopeless = !known && forecast(bestKey).diffLow <= 0;
+
+  // При заведомо проигрышном раскладе ставка по умолчанию снимается один раз:
+  // игрок не должен терять деньги на «типичной» сумме, которую он не выбирал.
+  if (hopeless && d.bet > 0 && d.stage !== 'result' && !d.autoZeroed) {
+    E.setBet(S, 0);
+    d.bet = S.duel.bet;
+    d.autoZeroed = true;
+  }
+
   const maneuvers = Object.entries(E.MANEUVERS).map(([key, m]) => {
     const active = d.maneuver === key;
     const q = forecast(key);
@@ -656,16 +669,20 @@ function renderDuelStage(d) {
     const label = known
       ? (q.diff > 0 ? '+' + money(q.diff) : q.diff === 0 ? 'ровно' : money(q.diff))
       : ahead > 0
-        ? `≥${money(-ahead)}`
+        ? `+${money(ahead)}`
         : q.diffHigh < 0
-          ? `<${money(-q.diffHigh)}`
+          ? `−${money(-q.diffHigh)}`
           : 'на грани';
-    // Второй строкой — точный запас по нижней границе: именно он отличает приёмы друг от друга.
-    const sub = known ? '' : (ahead >= 0 ? `+${money(ahead)}` : money(ahead));
+    // Второй строкой — словами, без плюсов и минусов, которые путают с силой:
+    // насколько стабилен приём против неизвестного соперника.
+    const sub = known ? ''
+      : ahead > 0 ? 'выигрыш даже при его максимуме'
+      : q.diffHigh < 0 ? 'проигрыш даже при его минимуме'
+      : 'исход решит разброс';
     return `<button class="man man--${tone} ${active ? 'man--on' : ''}" data-act="maneuver" data-key="${key}">
       <span class="man__name">${m.name}</span>
       <span class="man__forecast">${label}</span>
-      ${sub ? `<span class="man__sub">${sub} к худшему раскладу</span>` : ''}
+      ${sub ? `<span class="man__sub">${sub}</span>` : ''}
       <span class="man__desc">${m.desc}</span>
       <span class="man__cost">${m.cost ? money(m.cost) + ' М' : '—'}</span>
     </button>`;
@@ -687,7 +704,7 @@ function renderDuelStage(d) {
       <div class="duelcard__mid">
         <span class="duelcard__vs">против</span>
         <span class="duelcard__diff ${known ? (p.diff > 0 ? 'num-good' : p.diff < 0 ? 'num-bad' : '') : 'faint'}">
-          ${known ? (p.diff > 0 ? '+' + money(p.diff) : p.diff === 0 ? 'ровно' : money(p.diff)) : `${money(p.low)}–${money(p.high)}`}
+          ${known ? (p.diff > 0 ? '+' + money(p.diff) : p.diff === 0 ? 'ровно' : money(p.diff)) : `разлёт ${money(p.high - p.low)}`}
         </span>
       </div>
       <div class="duelcard__side duelcard__side--r">
@@ -727,10 +744,14 @@ function renderDuelStage(d) {
     <input type="range" min="0" max="${Math.max(20, Math.round(S.coins / 3))}" step="5" value="${d.bet}" data-betrange style="--fill:${(d.bet / Math.max(20, Math.round(S.coins / 3))) * 100}%" aria-label="Ставка" />
     <div class="tiny faint" style="text-align:center;margin-top:2px">ставка — не больше трети кассы</div>
 
+    ${hopeless ? `<div class="duelwarn">
+      <b>Расклад против тебя.</b> Даже лучший приём (${esc(E.MANEUVERS[bestKey].name.toLowerCase())}) не закрывает его максимум.
+      ${d.bet ? 'Ставка в ' + money(d.bet) + ' М сгорит при поражении.' : 'Ставку можно не ставить — тогда рискуешь только репутацией.'}
+    </div>` : ''}
     <div class="duelcta">
-      <button class="btn btn--quiet" data-act="leaveDuel" style="min-height:52px">уйти</button>
+      <button class="btn ${hopeless ? 'grow' : 'btn--quiet'}" data-act="leaveDuel" style="min-height:52px">уйти</button>
       ${man
-        ? `<button class="btn grow" data-act="resolveDuel" style="min-height:52px">${man.name === 'Дознание' ? 'вскрыть и в бой' : 'в бой · ' + man.name.toLowerCase()}</button>`
+        ? `<button class="btn grow ${hopeless ? 'btn--ghost' : ''}" data-act="resolveDuel" style="min-height:52px">${man.name === 'Дознание' ? 'вскрыть и в бой' : 'в бой · ' + man.name.toLowerCase()}</button>`
         : `<button class="btn grow" data-act="toManeuvers" style="min-height:52px">выбрать приём ↑</button>`}
     </div>
   `;
