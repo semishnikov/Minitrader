@@ -23,14 +23,16 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Android SDK (build-tools + platform)
-        uses: android-actions/setup-android@v3
-
-      - name: Поставить build-tools и platform 34
+      - name: Проверить Android SDK на раннере
         run: |
-          sdkmanager --install "platforms;android-34" "build-tools;34.0.0" >/dev/null
           echo "ANDROID_HOME=$ANDROID_HOME"
-          ls "$ANDROID_HOME/build-tools"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          ls "$ANDROID_HOME" 2>/dev/null || true
+          echo "--- build-tools ---"
+          ls "$ANDROID_HOME/build-tools" 2>/dev/null || echo "нет build-tools"
+          echo "--- platforms ---"
+          ls "$ANDROID_HOME/platforms" 2>/dev/null || echo "нет platforms"
+          which sdkmanager aapt2 javac keytool || true
 
       - name: Собрать APK
         run: bash android/build.sh
