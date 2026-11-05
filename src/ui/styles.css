@@ -375,6 +375,7 @@ h1, h2, h3, h4, p { margin: 0; }
 .relic {
   --cls: var(--brass);
   --rar: transparent;
+  container-type: inline-size;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -435,12 +436,15 @@ h1, h2, h3, h4, p { margin: 0; }
 .relic__name {
   font-family: var(--f-serif);
   font-weight: 600;
-  font-size: 12.5px;
+  /* Кегль подстраивается под ширину карточки: длинные названия не рвутся по буквам. */
+  font-size: clamp(10px, 3.4cqw, 12.5px);
   line-height: 1.06;
   letter-spacing: .005em;
   color: var(--ink);
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
   overflow: hidden;
+  overflow-wrap: break-word;
+  hyphens: auto;
   text-shadow: 0 1px 2px rgba(0,0,0,.6);
 }
 .relic__foot { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
@@ -534,8 +538,9 @@ h1, h2, h3, h4, p { margin: 0; }
 .lot__body { min-width: 0; display: grid; gap: 3px; }
 .lot__line { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
 .lot__title {
-  font-family: var(--f-serif); font-size: 14px; line-height: 1.15; color: var(--ink);
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
+  font-family: var(--f-serif); font-size: 14px; line-height: 1.18; color: var(--ink);
+  min-width: 0; overflow-wrap: break-word;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 .lot__chips { display: flex; gap: 4px; flex-wrap: wrap; }
 .lot__chips .chip { height: 19px; padding: 0 7px; font-size: 10px; }
