@@ -1371,6 +1371,8 @@ function newRun(seed = 'f' + Date.now().toString(36)) {
 }
 
 function splash() {
+  // Скелетон из index.html больше не нужен — его сменяет настоящий экран.
+  document.querySelector('.boot')?.remove();
   const sp = h(`<div class="splash">
     <div class="splash__in">
       <div style="color:var(--brass)">${crest(92)}</div>

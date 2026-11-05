@@ -1181,3 +1181,27 @@ input[type='range']:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px 
   font-size: 18px; line-height: 1; border-radius: 8px;
 }
 .tipbar__x:active { background: rgba(255,255,255,.07); }
+
+/* ---------- Экран загрузки ---------- */
+.boot {
+  min-height: 70vh;
+  display: grid; place-content: center; justify-items: center; gap: 14px;
+  text-align: center; padding: 24px;
+}
+.boot__seal {
+  width: 58px; height: 58px; border-radius: 50%;
+  border: 1px solid rgba(217,162,83,.45);
+  border-top-color: var(--brass-hi);
+  animation: bootSpin 1.1s linear infinite;
+}
+@keyframes bootSpin { to { transform: rotate(360deg); } }
+.boot__name {
+  font-family: var(--f-serif); font-size: 24px; font-weight: 600;
+  background: linear-gradient(180deg, #fff3da, var(--brass) 70%, #8a5f2b);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.boot__hint {
+  font-family: var(--f-display); font-size: 10px; letter-spacing: .24em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+@media (prefers-reduced-motion: reduce) { .boot__seal { animation: none; } }

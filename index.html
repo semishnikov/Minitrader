@@ -17,12 +17,27 @@
   <div id="app" class="app">
     <div class="paper" aria-hidden="true"></div>
     <header class="hud" id="hud"></header>
-    <main class="screen" id="screen" aria-live="polite"></main>
+    <!-- Скелетон: виден сразу, пока грузятся модули. На медленной сети это разница
+         между «пусто» и «сейчас будет». -->
+    <main class="screen" id="screen" aria-live="polite">
+      <div class="boot">
+        <div class="boot__seal" aria-hidden="true"></div>
+        <div class="boot__name">Ярмарка Отблесков</div>
+        <div class="boot__hint">зажигаем фонари…</div>
+      </div>
+    </main>
     <nav class="dock" id="dock"></nav>
   </div>
   <div class="toast-layer" id="toasts" aria-live="assertive"></div>
   <div class="modal-layer" id="modal"></div>
 
+  <!-- Предзагрузка модульного графа: без неё браузер узнаёт о зависимостях
+       только после разбора app.js, и каждая идёт отдельной задержкой. -->
+  <link rel="modulepreload" href="./src/core/engine.js" />
+  <link rel="modulepreload" href="./src/core/rng.js" />
+  <link rel="modulepreload" href="./src/data/cards.js" />
+  <link rel="modulepreload" href="./src/ui/art.js" />
+  <link rel="modulepreload" href="./src/ui/dom.js" />
   <script type="module" src="./src/ui/app.js"></script>
 </body>
 </html>
