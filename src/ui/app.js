@@ -126,6 +126,36 @@ function closeModal() {
 }
 
 // ---------------------------------------------------------------- отрисовка
+/**
+ * Обучение без простыни текста: ровно один шаг за раз, и шаг снимается
+ * не кнопкой «понятно», а самим действием. Три шага за первый день.
+ */
+const TIPS = [
+  { id: 'buy', tab: 'market', text: 'Возьми первый лот: «СТАВКА» → сумма. Ценность ≈ видна под названием.' },
+  { id: 'table', tab: 'table', text: 'Вещи на столе дают силу. Сдай ту, что ждёт дом, — получишь вдвое больше.' },
+  { id: 'duel', tab: 'duel', text: 'Вечером — дуэль. Смотри прогноз приёма: он считается до боя.' },
+];
+function currentTip() {
+  if (!S || !S.tutorial || S.tipsDone?.length >= TIPS.length) return null;
+  return TIPS.find((t) => !(S.tipsDone || []).includes(t.id)) || null;
+}
+function doneTip(id) {
+  if (!S) return;
+  S.tipsDone = [...(S.tipsDone || []), id];
+  if (TIPS.every((t) => S.tipsDone.includes(t.id))) S.tutorial = false;
+  save();
+}
+function tipBar() {
+  const tip = currentTip();
+  if (!tip) return '';
+  const step = TIPS.findIndex((t) => t.id === tip.id) + 1;
+  return `<div class="tipbar" data-tip="${tip.id}">
+    <span class="tipbar__n">${step}/${TIPS.length}</span>
+    <span class="tipbar__t">${esc(tip.text)}</span>
+    <button class="tipbar__x" data-act="tipSkip" aria-label="Скрыть подсказки">×</button>
+  </div>`;
+}
+
 function render(resetScroll = false) {
   if (!S) return;
   renderHUD();
@@ -210,7 +240,8 @@ function renderMarket() {
   const ordersHtml = S.orders.filter((o) => !o.done).map((o) => orderRow(o)).join('') ||
     `<div class="small faint" style="padding:6px 2px">Заказы на сегодня закрыты. Новые — завтра.</div>`;
 
-  SCREEN.innerHTML = `
+  SCREEN.innerHTML = `${tipBar()}
+    
     <h2 class="h-title" style="margin-top:2px">${esc(styleName)}</h2>
     <p class="h-sub">${esc(styleNote)}</p>
     ${S.market.focusCount >= 2 ? `<div class="row" style="margin-top:8px;gap:6px">
@@ -393,7 +424,8 @@ function renderTable() {
   const trip = t.triples.length;
   const classesCount = CLS.map((c) => ({ c, n: S.stash.filter((r) => r.class === c).length })).filter((x) => x.n > 0);
 
-  SCREEN.innerHTML = `
+  SCREEN.innerHTML = `${tipBar()}
+    
     <div class="eyebrow">Стол · день ${S.day}</div>
     <h2 class="h-title">${power}<span style="font-size:18px;color:var(--ink-dim)"> силы</span></h2>
     <p class="h-sub">${trip ? `тройка: ${t.triples.map((c) => CLASSES[c].name.toLowerCase()).join(', ')} · ×${(1 + trip * 0.18 + (t.allDifferent ? 0.12 : 0)).toFixed(2)}` : t.allDifferent ? 'все классы разные · ×1.12' : 'собери три вещи одного класса для тройки'}</p>
@@ -489,7 +521,7 @@ function pledgeRow(p, i) {
 // ---------------------------------------------------------------- ДУЭЛИ
 function renderDuel() {
   if (!S.duel) {
-    SCREEN.innerHTML = `
+    SCREEN.innerHTML = `${tipBar()}
       <div class="eyebrow">Вечер · арена заказов</div>
       <h2 class="h-title">Дуэли</h2>
       <p class="h-sub">Три боя за вечер. Ставка из монет, победа — приём и стол, а не удача.</p>
@@ -826,6 +858,7 @@ const actions = {
     if (!r.ok) return toast(esc(r.why), 'bad');
     sound.coin(); buzz(18);
     toast(`Заказ исполнен: +${money(r.reward)} М`, 'good');
+    doneTip('table');
     render();
   },
 
@@ -869,6 +902,7 @@ const actions = {
     toast('Заклад под слово: +140 М, −6 репутации.', 'brass', 3000);
     render();
   },
+  tipSkip() { S.tutorial = false; render(); save(); },
   deal() {
     const d = S.deal;
     const r = E.takeDeal(S);
@@ -909,6 +943,7 @@ const actions = {
     if (!r.ok) return toast(esc(r.why), 'bad');
     buzz(30);
     if (r.result.win) sound.win(); else sound.lose();
+    doneTip('duel');
     render();
   },
 
@@ -1019,7 +1054,11 @@ function openBidSheet(lot) {
     const r = E.placeBid(S, lot.id, ui.bidValue);
     if (!r.ok) { sound.no(); buzz(20); return toast(esc(r.why), 'bad'); }
     closeModal();
-    if (r.won) { sound.coin(); buzz(24); toast(`Взял за ${money(r.price)} М · каталог ${money(lot.value)} М`, 'good', 3200); }
+    if (r.won) {
+      sound.coin(); buzz(24);
+      toast(`Взял за ${money(r.price)} М · каталог ${money(lot.value)} М`, 'good', 3200);
+      doneTip('buy');
+    }
     else { sound.no(); buzz(16); toast(`Не взял: ${esc(r.note)}`, 'bad', 3200); }
     render();
   };
